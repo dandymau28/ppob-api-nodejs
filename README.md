@@ -7,3 +7,4 @@
 3. Make sure ` .env ` have right value on every variables
 4. Run command ` knex migrate:latest `
 5. After success migrate, run ` npm start `
+6. Happy Coding! :joy:
