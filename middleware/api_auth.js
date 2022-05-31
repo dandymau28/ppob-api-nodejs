@@ -2,7 +2,7 @@ const response = require('../response');
 const http = require('../response/http_code');
 
 module.exports.apiAuth = (req, res, next) => {
-    const clientKey = req.headers['X-API-KEY'];
+    const clientKey = req.headers['x-api-key'];
 
     try {
         //check if api key exist
