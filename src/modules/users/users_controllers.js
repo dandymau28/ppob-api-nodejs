@@ -56,7 +56,7 @@ const controllers = {
                 throw new Error('Failed to login, please try again');
             }
 
-            return response.success(res, null, 'OTP generated');
+            return response.success(res, { otp: OTPsent }, 'OTP generated');
         } catch (err) {
             console.log("login err: ", err);
             return response.internalError(res, err, 'internal server error');

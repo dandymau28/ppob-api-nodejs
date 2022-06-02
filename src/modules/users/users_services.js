@@ -36,13 +36,15 @@ const services = {
         return store;
     },
     CreateOTP: async(phoneNumber) => {
+        const OTP = generateOTP();
+
         let date = new Date();
         date.setMinutes( date.getMinutes() + 30 );
 
-        const update = await Users.updateOne({noHandphone: phoneNumber}, { otp: generateOTP(), otpExpire: date });
+        const update = await Users.updateOne({noHandphone: phoneNumber}, { otp: OTP, otpExpire: date });
 
         if (update.matchedCount > 0) {
-            return true
+            return OTP
         }
         return false
     },
