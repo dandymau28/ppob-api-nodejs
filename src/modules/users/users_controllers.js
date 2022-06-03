@@ -90,6 +90,12 @@ const controllers = {
                 return response.badRequest(res, ['OTP Expired'], 'Invalid request');
             }
 
+            const token = await userService.CreateToken(noHandphone);
+
+            if (!token) {
+                return response.badRequest(res, ['Fail to Verify OTP'], 'Invalid request');
+            }
+
             return response.success(res, null, 'OTP verified');
         } catch(err) {
             console.log("verify otp err: ", err);
