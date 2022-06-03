@@ -96,7 +96,7 @@ const controllers = {
                 return response.badRequest(res, ['Fail to Verify OTP'], 'Invalid request');
             }
 
-            return response.success(res, null, 'OTP verified');
+            return response.success(res, {token}, 'OTP verified');
         } catch(err) {
             console.log("verify otp err: ", err);
             return response.internalError(res, err, 'internal server error');
