@@ -1,5 +1,6 @@
 const db = require('../../../config/database');
 const Users = require('../../models/users');
+const randomstring = require('randomstring');
 
 
 const services_postgres = {
@@ -25,7 +26,7 @@ const services_postgres = {
 
 const services = {
     IsPhoneNumberExist: async(phoneNumber) => {
-        const exist = await Users.findOne({ noHandphone: phoneNumber}).exec();
+        const exist = await Users.findOne({ noHandphone: phoneNumber});
 
         if (exist) return true
         return false
@@ -36,13 +37,15 @@ const services = {
         return store;
     },
     CreateOTP: async(phoneNumber) => {
-        let date = new Date();
-        date.setMinutes( date.getMinutes() + 30 );
+        const OTP = generateOTP();
 
-        const update = await Users.updateOne({noHandphone: phoneNumber}, { otp: generateOTP(), otpExpire: date });
+        let expiryDate = new Date();
+        expiryDate.setMinutes( expiryDate.getMinutes() + 30 );
+
+        const update = await Users.updateOne({noHandphone: phoneNumber}, { otp: OTP, otpExpire: expiryDate });
 
         if (update.matchedCount > 0) {
-            return true
+            return OTP
         }
         return false
     },
@@ -50,12 +53,28 @@ const services = {
         const user = await Users.findOne({ noHandphone: phoneNumber, otp: otp });
 
         return user
+    },
+    CreateToken: async(phoneNumber) => {
+        const token = randomstring.generate(7);
+
+        let expiryDate = new Date();
+        expiryDate.setDate( expiryDate.getDate() + 1 );
+
+        const update = await Users.updateOne({noHandphone: phoneNumber}, { token: token, tokenExpire: expiryDate});
+
+        if (update.matchedCount > 0) {
+            return token
+        }
+        return false
     }
 };
 
 
 var generateOTP = () => {
-    return Math.floor(Math.random() * 999999);
+    return randomstring.generate({
+        length: 6,
+        charset: 'numeric'
+    });
 }
 
 module.exports = services;

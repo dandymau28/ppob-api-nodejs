@@ -56,7 +56,7 @@ const controllers = {
                 throw new Error('Failed to login, please try again');
             }
 
-            return response.success(res, null, 'OTP generated');
+            return response.success(res, { otp: OTPsent }, 'OTP generated');
         } catch (err) {
             console.log("login err: ", err);
             return response.internalError(res, err, 'internal server error');
@@ -88,6 +88,12 @@ const controllers = {
 
             if (otpExpire < now) {
                 return response.badRequest(res, ['OTP Expired'], 'Invalid request');
+            }
+
+            const token = await userService.CreateToken(noHandphone);
+
+            if (!token) {
+                return response.badRequest(res, ['Fail to Verify OTP'], 'Invalid request');
             }
 
             return response.success(res, null, 'OTP verified');
