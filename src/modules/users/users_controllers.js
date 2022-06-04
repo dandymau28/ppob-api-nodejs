@@ -21,8 +21,11 @@ const controllers = {
                 return response.badRequest(res, ['phone number already used'], 'Invalid input');
             }
 
-            let saltRounds = 12;
-            let encryptedPassword = bcrypt.hashSync(password, saltRounds);
+            let encryptedPassword = null;
+            if (password) {
+                let saltRounds = 12;
+                encryptedPassword = bcrypt.hashSync(password, saltRounds);
+            }
 
             let user = {
                 noHandphone: no_handphone,
