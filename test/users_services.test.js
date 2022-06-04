@@ -1,11 +1,11 @@
 const mongoose = require('mongoose');
 
-beforeEach(() => {
-    return mongoose.connect('mongodb+srv://mongodb:VY5jAiyr9aSf2XPJ@cluster0.8m3glek.mongodb.net/?retryWrites=true&w=majority');
+beforeEach(async() => {
+    return await mongoose.connect('mongodb+srv://mongodb:VY5jAiyr9aSf2XPJ@cluster0.8m3glek.mongodb.net/?retryWrites=true&w=majority');
 })
 
-afterEach(() => {
-    return mongoose.connection.close();
+afterEach(async() => {
+    return await mongoose.disconnect();
 })
 
 
@@ -35,6 +35,15 @@ const TokenCases = [
     ['092132172312'],
     ['abcdef'],
     ['001231']
+]
+
+const ProfileCases = [
+    '082139230782',
+    '0812345678910',
+    '0812345678911',
+    '0812345678912',
+    '0812345678913',
+    '0812345678914'
 ]
 
 var extendCases = {
@@ -90,5 +99,14 @@ describe('Create Token Service', () => {
     test.each(TokenCases)("Phone# %p",
     (phoneNumber) => {
         return expect(userServices.CreateToken(phoneNumber)).resolves.haveValueOrFalse();
+    }, 30000)
+})
+
+describe('Get Profile Service', () => {
+    expect.extend(extendCases.haveValueOrFalse)
+
+    test.each(ProfileCases)("Phone# %p",
+    (phoneNumber) => {
+        return expect(userServices.GetProfileByPhone(phoneNumber)).resolves.haveValueOrFalse();
     }, 30000)
 })
