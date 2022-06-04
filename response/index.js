@@ -22,17 +22,29 @@ const responses = {
     },
     badRequest: (res, error = null, message = null) => {
         responseError.meta.message = message;
-        responseError.error = error;
+        if (!error) {
+            responseError.error = [message];
+        } else {
+            responseError.error = error;
+        }
         res.status(http.BAD_REQUEST).json(responseError);
     },
     internalError: (res, error = null, message = null) => {
         responseError.meta.message = message;
-        responseError.error = error;
+        if (!error) {
+            responseError.error = [message];
+        } else {
+            responseError.error = error;
+        }
         res.status(http.INTERNAL_SERVER_ERROR).json(responseError);
     },
     error: (res, httpCode, error = null, message = null) => {
         responseError.meta.message = message;
-        responseError.error = error;
+        if (!error) {
+            responseError.error = [message];
+        } else {
+            responseError.error = error;
+        }
         res.status(httpCode).json(responseError);
     }
 }
