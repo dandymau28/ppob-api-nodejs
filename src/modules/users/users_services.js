@@ -36,6 +36,11 @@ const services = {
 
         return store;
     },
+    GetUserByPhone: async(phoneNumber) => {
+        const user = await Users.findOne({noHandphone: phoneNumber}).select('-password');
+
+        return user;
+    },
     CreateOTP: async(phoneNumber) => {
         const OTP = generateOTP();
 
@@ -56,16 +61,56 @@ const services = {
     },
     CreateToken: async(phoneNumber) => {
         const token = randomstring.generate(7);
+        const refreshToken = randomstring.generate(10);
 
         let expiryDate = new Date();
         expiryDate.setDate( expiryDate.getDate() + 1 );
 
-        const update = await Users.updateOne({noHandphone: phoneNumber}, { token: token, tokenExpire: expiryDate});
+        let expiryRefreshDate = new Date();
+        expiryRefreshDate.setDate( expiryRefreshDate.getDate() + 3);
+
+        const update = await Users.updateOne({noHandphone: phoneNumber}, 
+            { 
+                token: token, 
+                tokenExpire: expiryDate, 
+                refreshToken: refreshToken, 
+                refreshTokenExpire: expiryRefreshDate
+            });
 
         if (update.matchedCount > 0) {
-            return token
+            return {
+                token,
+                tokenExpire: expiryDate,
+                refreshToken,
+                refreshTokenExpire: expiryRefreshDate
+            }
         }
         return false
+    },
+    removeOTP: async(phoneNumber) => {
+        const remove = await Users.updateOne({ noHandphone: phoneNumber }, 
+        {
+            otp: null
+        });
+
+        if (remove.matchedCount > 0) {
+            return true
+        }
+        return false
+    },
+    GetProfileByPhone: async(phoneNumber) => {
+        const user = await Users.findOne({ phoneNumber: phoneNumber}).select(['username', 'noHandphone', 'macAddress']);
+
+        return user;
+    },
+    CheckRefreshToken: async(phoneNumber, token, refreshToken) => {
+        const user = await Users.findOne({ noHandphone: phoneNumber, token: token, refreshToken: refreshToken});
+        console.log(user);
+
+        if (user) {
+            return user;
+        }
+        return false;
     }
 };
 
