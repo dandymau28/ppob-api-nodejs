@@ -28,4 +28,20 @@ mongoose.connect('mongodb+srv://mongodb:VY5jAiyr9aSf2XPJ@cluster0.8m3glek.mongod
     console.log("MongoDB fail to connect", err);
 });
 
+mongoose.connection.on("disconnected", () => {
+    console.log("Disconnected gracefully");
+})
+
+process.on('exit', (code) => {
+    mongoose.disconnect();
+    console.log(`Exit on code: ${code}`)
+    return
+})
+
+process.on('SIGINT', () => {
+    mongoose.disconnect();
+    console.log(`Exit by SIGINT`)
+    return
+})
+
 module.exports = app;
