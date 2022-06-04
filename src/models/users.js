@@ -12,6 +12,8 @@ const Users = new Schema({
     macAddress: String,
     token: String,
     tokenExpire: Date,
+    refreshToken: String,
+    refreshTokenExpire: Date,
     otp: {
         type: String,
         max: 6,
