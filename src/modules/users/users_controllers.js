@@ -2,6 +2,7 @@ const userService = require('./users_services');
 const response = require('../../../response');
 const http = require('../../../response/http_code');
 const { validationResult } = require('express-validator');
+const bcrypt = require('bcrypt');
 
 const controllers = {
     register: async(req, res) => {
@@ -12,7 +13,7 @@ const controllers = {
                 return response.error(res, http.BAD_REQUEST, errors.array(), 'Invalid request');
             }
     
-            const { no_handphone, password, mac_address } = req.body;
+            let { no_handphone, password, mac_address } = req.body;
 
             var phoneExist = await userService.IsPhoneNumberExist(no_handphone);
 
@@ -20,17 +21,30 @@ const controllers = {
                 return response.badRequest(res, ['phone number already used'], 'Invalid input');
             }
 
-            user = {
+            let saltRounds = 12;
+            let encryptedPassword = bcrypt.hashSync(password, saltRounds);
+
+            let user = {
                 noHandphone: no_handphone,
-                password: password,
+                password: encryptedPassword,
                 macAddress: mac_address
             };
 
-            await userService.StoreUser(user);
+            let register = await userService.StoreUser(user);
 
-            return response.success(res, null, 'success');
+            if (!register) {
+                return response.error(res, http.CONFLICT, null, 'Unable to register');
+            }
+
+            let userRegistered = await userService.GetUserByPhone(no_handphone);
+
+            if (!userRegistered) {
+                return response.error(res, http.CONFLICT, null, 'Unable to register');
+            }
+
+            return response.success(res, userRegistered, 'success');
         } catch(err) {
-            console.error(err);
+            console.log(err.stack)
             return response.error(res, http.INTERNAL_SERVER_ERROR, err, 'internal server error');
         }
     },
@@ -58,7 +72,7 @@ const controllers = {
 
             return response.success(res, { otp: OTPsent }, 'OTP generated');
         } catch (err) {
-            console.log("login err: ", err);
+            console.log(err.stack)
             return response.internalError(res, err, 'internal server error');
         }
     },
@@ -93,12 +107,69 @@ const controllers = {
             const token = await userService.CreateToken(noHandphone);
 
             if (!token) {
-                return response.badRequest(res, ['Fail to Verify OTP'], 'Invalid request');
+                return response.badRequest(res, ['Fail to verify OTP'], 'Invalid request');
             }
 
-            return response.success(res, {token}, 'OTP verified');
+            const removeToken = await userService.removeOTP(noHandphone);
+
+            if (!removeToken) {
+                return response.badRequest(res, ['Fail to verify OTP'], 'Invalid request');
+            }
+
+            return response.success(res, token, 'OTP verified');
         } catch(err) {
-            console.log("verify otp err: ", err);
+            console.log(err.stack)
+            return response.internalError(res, err, 'internal server error');
+        }
+    },
+    getProfile: async(req, res) => {
+        try {
+            const { phone } = req.params;
+    
+            if (!phone) {
+                return response.badRequest(res, null, 'Phone number params is required');
+            }
+
+            let user = await userService.GetProfileByPhone(phone);
+    
+            if(!user) {
+                return response.error(res, http.NOT_FOUND, null, 'Resource not found');
+            }
+
+            return response.success(res, user, 'success');
+        } catch (err) {
+            console.log(err.stack)
+            return response.internalError(res, err, 'internal server error');
+        }
+    },
+    refreshToken: async(req, res) => {
+        try {
+            let { token } = req;
+            let refreshToken = req.query?.refresh_token;
+            let { phone } = req.params;
+
+            let isRefreshAvailable = await userService.CheckRefreshToken(phone, token, refreshToken);
+
+            if (!isRefreshAvailable) {
+                return response.badRequest(res, null, 'Refresh token failed. Use login instead');
+            }
+
+            let expireRefresh = new Date(isRefreshAvailable.refreshTokenExpire);
+            let now = new Date();
+
+            if (expireRefresh < now) {
+                return response.badRequest(res, null, 'Refresh token expired. Use login instead');
+            }
+
+            let refreshedToken = await userService.CreateToken(phone);
+
+            if (!refreshedToken) {
+                return response.badRequest(res, null, 'Refresh token failed');
+            }
+
+            return response.success(res, refreshedToken, 'success');
+        } catch(err) {
+            console.log(err.stack)
             return response.internalError(res, err, 'internal server error');
         }
     },
@@ -130,6 +201,7 @@ const controllers = {
             }
             return response.success(res);
         } catch (err) {
+            console.log(err.stack)
             return response.internalError(res, err, 'internal server error');
         }
     }
