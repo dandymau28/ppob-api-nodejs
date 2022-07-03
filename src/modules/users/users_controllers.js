@@ -18,7 +18,7 @@ const controllers = {
             var phoneExist = await userService.IsPhoneNumberExist(no_handphone);
 
             if (phoneExist) {
-                return response.badRequest(res, ['phone number already used'], 'Invalid input');
+                return response.badRequest(res, null, 'Phone number already registered');
             }
 
             let encryptedPassword = null;
@@ -64,13 +64,13 @@ const controllers = {
             var phoneRegistered = await userService.IsPhoneNumberExist(phone);
 
             if (!phoneRegistered) {
-                return response.badRequest(res, ['phone is not registered'], 'Invalid request');
+                return response.badRequest(res, null, 'Phone is not registered');
             }
 
             var OTPsent = await userService.CreateOTP(phone);
 
             if (!OTPsent) {
-                throw new Error('Failed to login, please try again');
+                return response.internalError(res, null, 'Failed to login, please try again');
             }
 
             return response.success(res, { otp: OTPsent }, 'OTP generated');
@@ -91,32 +91,32 @@ const controllers = {
             const otp = req.query?.otp;
 
             if (!otp) {
-                return response.badRequest(res, ['Invalid OTP'], 'Invalid request');
+                return response.badRequest(res, null, 'Invalid OTP');
             }
 
             var user = await userService.GetOTP(noHandphone, otp);
 
             if (!user) {
-                return response.badRequest(res, ['Invalid OTP'], 'Invalid request');
+                return response.badRequest(res, null, 'Invalid OTP');
             }
 
             let now = new Date();
             let otpExpire = new Date(user.otpExpire);
 
             if (otpExpire < now) {
-                return response.badRequest(res, ['OTP Expired'], 'Invalid request');
+                return response.badRequest(res, null, 'OTP Expired');
             }
 
             const token = await userService.CreateToken(noHandphone);
 
             if (!token) {
-                return response.badRequest(res, ['Fail to verify OTP'], 'Invalid request');
+                return response.badRequest(res, null, 'Fail to verify OTP');
             }
 
             const removeToken = await userService.removeOTP(noHandphone);
 
             if (!removeToken) {
-                return response.badRequest(res, ['Fail to verify OTP'], 'Invalid request');
+                return response.badRequest(res, null, 'Fail to verify OTP');
             }
 
             return response.success(res, token, 'OTP verified');
