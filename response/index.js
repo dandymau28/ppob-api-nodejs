@@ -21,9 +21,13 @@ const responses = {
         res.status(http.SUCCESS).json(response);
     },
     badRequest: (res, error = null, message = null) => {
-        responseError.meta.message = message;
+        responseError.meta.message = 'Invalid Request';
         if (!error) {
-            responseError.error = [message];
+            responseError.error = [
+                {
+                    msg: message
+                }
+            ];
         } else {
             responseError.error = error;
         }
@@ -32,7 +36,11 @@ const responses = {
     internalError: (res, error = null, message = null) => {
         responseError.meta.message = message;
         if (!error) {
-            responseError.error = [message];
+            responseError.error = [
+                {
+                    msg: message
+                }
+            ];
         } else {
             responseError.error = error;
         }
@@ -41,7 +49,11 @@ const responses = {
     error: (res, httpCode, error = null, message = null) => {
         responseError.meta.message = message;
         if (!error) {
-            responseError.error = [message];
+            responseError.error = [
+                {
+                    msg: message
+                }
+            ];
         } else {
             responseError.error = error;
         }
