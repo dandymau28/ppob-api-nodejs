@@ -6,7 +6,7 @@ const validators = {
         body('mac_address').exists({ checkNull: true }).withMessage('Mac address is required')
     ],
     generateOTP: [
-        param('phone').isLength({ min:11, max:14 }).withMessage('Phone number must be at least 11 characters long')
+        param('phone').isLength({ min:11, max:14 }).withMessage('Phone number must be at least 11 - 14 characters long')
     ],
     verifyOTP: [
         param('phone').isLength({ min:11, max:14 }).withMessage('Invalid phone number'),
