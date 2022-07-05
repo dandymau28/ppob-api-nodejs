@@ -128,7 +128,7 @@ const services = {
 
                     if (product.code && product.operator) {
                         let newProduct = { ...product }
-                        upserts.push(Products.updateOne({ code: newProduct.code, supplier: newProduct.supplier  }, newProduct, { upsert: true }));
+                        upserts.push(Products.updateOne({ code: newProduct.code, supplier: newProduct.supplier, operator: newProduct.operator  }, newProduct, { upsert: true }));
                     }
                 }
             }
@@ -214,7 +214,7 @@ const services = {
                         counter++;
                     }
                     let newProduct = {...product}
-                    upserts.push(Products.updateOne({ code: newProduct.code, supplier: newProduct.supplier }, newProduct, { upsert: true }))
+                    upserts.push(Products.updateOne({ code: newProduct.code, supplier: newProduct.supplier, operator: newProduct.operator }, newProduct, { upsert: true }))
                 }
             }
 
