@@ -5,6 +5,8 @@ const Users = require('../src/models/users');
 module.exports.reqAuth = async(req, res, next) => {
     try {
         const bearerToken = req.headers['authorization'];
+
+        if (!bearerToken) return response.error(res, http.UNAUTHORIZED, null, 'No token found');
     
         let token = bearerToken.split(' ')[1];
     
