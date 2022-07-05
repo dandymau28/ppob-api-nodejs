@@ -1,0 +1,32 @@
+[
+    {
+        "name": "pulsa",
+        "operator": "telkomsel",
+        "prefix": ["0852", "0853", "0811", "0812", "0813", "0821", "0822", "0851"]
+    },
+    {
+        "name": "pulsa",
+        "operator": "indosat",
+        "prefix": ["0857", "0856"]
+    },
+    {
+        "name": "pulsa",
+        "operator": "xl",
+        "prefix": ["0817", "0818", "0819", "0859", "0877", "0878"]
+    },
+    {
+        "name": "pulsa",
+        "operator": "axis",
+        "prefix": ["0831", "0832", "0833", "0838"]
+    },
+    {
+        "name": "pulsa",
+        "operator": "three",
+        "prefix": ["0896", "0895", "0897", "0898", "0899"]
+    },
+    {
+        "name": "pulsa",
+        "operator": "smartfren",
+        "prefix": ["0881", "0882", "0883", "0884", "0885", "0886", "0887", "0888", "0889"]
+    }
+]

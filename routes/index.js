@@ -1,8 +1,8 @@
 var express = require('express');
 var router = express.Router();
 
-var userRouter = require('../src/modules/users/users_routes');
-var productRouter = require('../src/modules/products/products_routes');
+var userRouter = require('../src/modules/users/users.routes');
+var productRouter = require('../src/modules/products/products.routes');
 
 router.use('/users', userRouter)
 router.use('/products', productRouter)

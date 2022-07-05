@@ -13,6 +13,7 @@ const Products = new Schema({
     sourceLink: String,
     category: String,
     group: String,
+    operator: String,
     deletedAt: Date
 }, {
     timestamps: true

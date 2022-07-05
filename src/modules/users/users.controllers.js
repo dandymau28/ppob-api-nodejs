@@ -1,4 +1,4 @@
-const userService = require('./users_services');
+const userService = require('./users.services');
 const response = require('../../../response');
 const http = require('../../../response/http_code');
 const { validationResult } = require('express-validator');
