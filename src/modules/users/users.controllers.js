@@ -107,11 +107,13 @@ const controllers = {
                 return response.badRequest(res, null, 'OTP Expired');
             }
 
-            const token = await userService.CreateToken(noHandphone);
+            let token = await userService.CreateToken(noHandphone);
 
             if (!token) {
                 return response.badRequest(res, null, 'Fail to verify OTP');
             }
+
+            token.token = Buffer.from(`${noHandphone}:${token.token}`).toString('base64');
 
             const removeToken = await userService.removeOTP(noHandphone);
 
