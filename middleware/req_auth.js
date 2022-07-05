@@ -8,13 +8,15 @@ module.exports.reqAuth = async(req, res, next) => {
 
         if (!bearerToken) return response.error(res, http.UNAUTHORIZED, null, 'No token found');
     
-        let token = bearerToken.split(' ')[1];
-    
-        const { phone } = req.params
-    
-        if (!token) {
+        let [,authToken] = bearerToken.split(' ');
+
+        if (!authToken) {
             return response.error(res, http.UNAUTHORIZED, null, 'No token found');
         }
+    
+        let decodedToken = Buffer.from(authToken, 'base64').toString('ascii');
+
+        let [phone, token] = decodedToken.split(':');    
 
         let user = await Users.findOne({ noHandphone: phone, token: token });
 
