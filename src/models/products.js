@@ -6,7 +6,7 @@ const {Types: {Long}} = mongoose;
 const Products = new Schema({
     code: String,
     name: String,
-    price: Long,
+    price: Number,
     status: Boolean,
     description: String,
     supplier: String,
