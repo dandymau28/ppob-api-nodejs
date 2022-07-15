@@ -37,6 +37,7 @@ module.exports.reqAuth = async(req, res, next) => {
                 return response.error(res, http.UNAUTHORIZED, null, 'Token expired');
             }
 
+            req.user = user;
             next();
         }
     } catch(err) {
