@@ -45,13 +45,13 @@ mongoose.connection.on("disconnected", () => {
 process.on('exit', (code) => {
     mongoose.disconnect();
     console.log(`Exit on code: ${code}`)
-    return
+    process.exit(0)
 })
 
 process.on('SIGINT', () => {
     mongoose.disconnect();
     console.log(`Exit by SIGINT`)
-    return
+    process.exit(0)
 })
 
 module.exports = app;
