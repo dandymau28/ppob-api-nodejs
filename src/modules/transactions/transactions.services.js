@@ -4,6 +4,7 @@ const TxnHistory = require('../../models/transactionHistory')
 const mongoose = require('mongoose')
 const { v4: uuidv4 } = require('uuid')
 const moment = require('moment')
+const axios = require('axios').default
 
 const service = {
     productDetail: async(id) => {
@@ -18,7 +19,7 @@ const service = {
             "product_code": product.code,
             "price" : price,
             "additional": additional,
-            "total": price + additional
+            "total": Math.round(price + additional)
         }
 
         return data
@@ -58,6 +59,15 @@ const service = {
         .then(() => session.commitTransaction())
         .then(() => session.endSession())
         .then(() => txn);
+    },
+    PLNValidation: async(customerNo) => {
+        let url = 'https://api.digiflazz.com/v1/transaction';
+        let body = {
+            'commands': 'pln-subscribe',
+            'customer_no': customerNo
+        }
+
+        return await axios.post(url, body);
     }
 }
 
