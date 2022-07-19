@@ -40,6 +40,11 @@ const services = {
                 'operator': 'smartfren',
                 'pattern': [/HSM/]
             },
+            {
+                'name': 'listrik',
+                'operator': 'pln',
+                'pattern': [/TKN/, /HTKF/,/HTKFR/]
+            }
         ]
 
         try {
@@ -177,14 +182,19 @@ const services = {
 
                     //Title
                     if (hasBgcolor && hasBgcolor === '#CAFFFF') {
-                        let trValue = $(tr).children('td').children('strong').text();
-                        var [operator, pattern] = trValue.split(' Kode ');
+                        let trValue = $(tr).children('td').children('strong').text().toLowerCase();
+                        var [operator, pattern] = trValue.split(' kode ');
                         let operatorLength = operator.split(' ').length;
-                        if (!pattern || operator === 'PLN' || operatorLength > 1) {
+                        if (!pattern || operatorLength > 1) {
                             product.category = '';
                             continue;
                         };
-                        product.category = trValue;
+
+                        if (operator === 'pln') {
+                            product.category = 'listrik';
+                        } else {
+                            product.category = 'pulsa';
+                        }
                         continue;
                     }
 
@@ -201,7 +211,6 @@ const services = {
                                 let [group] = tdValue.match(/[0-9]\d*/);
                                 product.group = group;
                                 product.code = tdValue;
-                                product.category = 'pulsa';
                                 product.operator = operator.toLowerCase();
                             case 1:
                                 tdValue = tdValue === 'Normal' ? true : false;
