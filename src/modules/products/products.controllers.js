@@ -44,7 +44,6 @@ const controller = {
             response.internalError(res, err, err.message);
         }
     },
-    //TODO: GET OPERATOR LIST
     getOperatorList: async(req, res) => {
         logger.log('info', `${moment().format()} | Start getting operator list ...`);
         try {
