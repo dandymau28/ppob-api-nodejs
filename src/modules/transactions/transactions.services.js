@@ -27,13 +27,13 @@ const service = {
         let session = null;
         
         let { noHandphone, username } = user;
-        let { code, price, supplier, category } = product;
+        let { code, price, supplier, category, operator } = product;
         let paymentCode = generatePaymentCode();
         let paymentRef = generatePaymentRef();
 
         let txn = {
             user: { noHandphone, username },
-            product: { code, price, supplier, category },
+            product: { code, price, supplier, category, operator },
             totalPrice,
             paymentCode,
             txnNumber,
