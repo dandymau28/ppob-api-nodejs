@@ -1,6 +1,7 @@
 const transactionService = require('./transactions.services')
 const response = require('../../../response')
-const httpCode = require('../../../response/http_code')
+const http = require('../../../response/http_code')
+const { validationResult } = require('express-validator');
 const { process: logger } = require('../../../helper/logger')
 
 const controller = {
@@ -24,6 +25,12 @@ const controller = {
     purchaseProduct: async(req, res) => {
         logger.log('info', `purchase product started ... `);
         try {
+            const errors = validationResult(req);
+    
+            if (!errors.isEmpty()) {
+                return response.error(res, http.BAD_REQUEST, errors.array(), 'Invalid request');
+            }
+
             let { id: productId } = req.params;
             let { txn_number: txnNumber } = req.body;
 
@@ -42,6 +49,49 @@ const controller = {
             return response.success(res, txn, 'Transaksi Sukses!');
         } catch(err) {
             logger.log('error', `purchase product failed | ${err.message}`);
+            return response.internalError(res, null, err.message);
+        }
+    },
+    validateID: async(req, res) => {
+        logger.log('info', 'validateID started ...');
+        try {
+            const errors = validationResult(req);
+    
+            if (!errors.isEmpty()) {
+                return response.error(res, http.BAD_REQUEST, errors.array(), 'Invalid request');
+            }
+
+            let { category, customerNo } = req.params;
+            let validate;
+            
+            logger.log('info', 'validateID calling service started ...');
+            switch(category) {
+                case 'listrik':
+                    validate = await transactionService.PLNValidation(customerNo);
+                    break;
+                default:
+                    throw new Error('Service not available');
+            }
+            logger.log('info', 'validateID calling service done ...');
+
+            if (!validate) {
+                throw new Error('No service to run');
+            }
+
+            //* extract data from axios
+            let axiosData = validate.data;
+
+            //* extract data return
+            let { data } = axiosData;
+
+            logger.log('info', 'validateID finished');
+            if (!data.meter_no) {
+                return response.badRequest(res, null, 'Customer ID invalid');
+            }
+
+            return response.success(res, data, 'success');
+        } catch(err) {
+            logger.log('error', `validateID failed | ${err.message}`);
             return response.internalError(res, null, err.message);
         }
     }
