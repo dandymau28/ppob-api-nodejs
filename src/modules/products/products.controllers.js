@@ -37,8 +37,13 @@ const controller = {
                 return response.error(res, http.NOT_FOUND, null, 'Product not found');
             }
 
+            let newProducts = products.map((item) => {
+                item.group = item.group.length > 3 ? Array.from(item.group)[0] + 'jt' : item.group + 'rb';
+                return item;
+            });
+
             logger.log('info', `${moment().format()} | getting product list by operator done `);
-            return response.success(res, products, 'success');
+            return response.success(res, newProducts, 'success');
         } catch(err) {
             logger.log('error', `${moment().format()} | getting product list by operator failed `);
             response.internalError(res, err, err.message);
