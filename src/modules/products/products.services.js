@@ -13,32 +13,32 @@ const services = {
             {
                 'name': 'pulsa',
                 'operator': 'telkomsel',
-                'pattern': [/NFTS/, /PTSEL/, /HTP/, /BYU/]
+                'pattern': [/^NFTS/, /^PTSEL/, /^HTP/, /^BYU/]
             },
             {
                 'name': 'pulsa',
                 'operator': 'indosat',
-                'pattern': [/PIN/, /NFIN/]
+                'pattern': [/^PIN/, /^NFIN/]
             },
             {
                 'name': 'pulsa',
                 'operator': 'xl',
-                'pattern': [/NFXL/]
+                'pattern': [/^NFXL/]
             },
             {
                 'name': 'pulsa',
                 'operator': 'axis',
-                'pattern': [/NFXL/]
+                'pattern': [/^NFXL/]
             },
             {
                 'name': 'pulsa',
                 'operator': 'three',
-                'pattern': [/HTR/]
+                'pattern': [/^HTR/]
             },
             {
                 'name': 'pulsa',
                 'operator': 'smartfren',
-                'pattern': [/HSM/]
+                'pattern': [/^HSM/]
             },
             {
                 'name': 'listrik',
