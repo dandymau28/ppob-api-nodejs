@@ -64,7 +64,7 @@ const services = {
         const refreshToken = randomstring.generate(10);
 
         let expiryDate = new Date();
-        expiryDate.setDate( expiryDate.getMinutes() + 2 );
+        expiryDate.setMinutes( expiryDate.getMinutes() + 2 );
         // expiryDate.setDate( expiryDate.getDate() + 1 );
 
         let expiryRefreshDate = new Date();
