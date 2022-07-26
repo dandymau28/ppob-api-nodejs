@@ -114,9 +114,10 @@ const services = {
                                     product.category = categoryItem?.name || '';
                                     product.operator = categoryItem?.operator || '';
                                     product.group = group || '';
+                                    product.description = `${categoryItem?.name} ${categoryItem?.operator} ${group}`;
                                     product.code = value;
                                 case 1:
-                                    product.description = value;
+                                    // product.description = value;
                                 case 2:
                                     let splittedVal = value.split('.');
                                     value = splittedVal.join('');
@@ -222,6 +223,7 @@ const services = {
 
                         counter++;
                     }
+                    product.description = `${product.category} ${product.operator} ${product.group}`;
                     let newProduct = {...product}
                     upserts.push(Products.updateOne({ code: newProduct.code, supplier: newProduct.supplier, operator: newProduct.operator }, newProduct, { upsert: true }))
                 }
