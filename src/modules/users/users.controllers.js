@@ -113,7 +113,7 @@ const controllers = {
                 return response.badRequest(res, null, 'Fail to verify OTP');
             }
 
-            token.token = Buffer.from(`${noHandphone}:${token.token}`).toString('base64');
+            // token.token = Buffer.from(`${noHandphone}:${token.token}`).toString('base64');
 
             const removeToken = await userService.removeOTP(noHandphone);
 
