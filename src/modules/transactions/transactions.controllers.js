@@ -10,9 +10,17 @@ const controller = {
         try {
             let { id } = req.params
             
+            if (!id.match(/^[0-9a-fA-F]{24}$/)) {
+                return response.badRequest(res, null, 'Invalid id given');
+            }
+
             logger.log('info', 'get product detail started ...');
             let product = await transactionService.productDetail(id);
             logger.log('info', 'get product detail finished ...');
+
+            if (!product) {
+                return response.error(res, http.NOT_FOUND, null, 'Product not found');
+            }
 
             let detail = transactionService.preTxnDetail(product);
 
