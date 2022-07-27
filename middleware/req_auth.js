@@ -19,7 +19,10 @@ module.exports.reqAuth = async(req, res, next) => {
 
         // let [phone, token] = decodedToken.split(':');    
 
-        let user = await Users.findOne({ noHandphone: phone, token: authToken });
+        // let user = await Users.findOne({ noHandphone: phone, token: authToken });
+        let user = await Users.findOne({ token: authToken });
+
+        console.log(user);
 
         if (!user) {
             return response.error(res, http.UNAUTHORIZED, null, 'Credentials invalid');
