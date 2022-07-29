@@ -7,5 +7,7 @@ const { reqAuth } = require('../../../middleware/req_auth')
 router.get('/product/:id/detail', transactionController.getTransactionDetail);
 router.post('/product/:id/buy', reqAuth, transactionValidator.purchaseProduct, transactionController.purchaseProduct);
 router.get('/product/:category/validate/:customerNo', reqAuth, transactionValidator.validateID, transactionController.validateID);
+router.get('/:phone/history', reqAuth, transactionController.getTransactionHistory);
+router.get('/:phone/history/:id/detail', reqAuth, transactionController.getTransactionHistoryDetail);
 
 module.exports = router;

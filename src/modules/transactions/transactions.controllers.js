@@ -102,6 +102,58 @@ const controller = {
             logger.log('error', `validateID failed | ${err.message}`);
             return response.internalError(res, null, err.message);
         }
+    },
+    getTransactionHistory: async(req, res) => {
+        logger.log('info', 'get transaction history started ...');
+        try {
+            let { phone } = req.params;
+
+            if (req?.user?.noHandphone !== phone) {
+                return response.error(res, http.FORBIDDEN, null, 'Forbidden');
+            }
+
+            logger.log('info', 'start service txnHistory');
+            let txnHistory = await transactionService.txnHistoryByPhoneNumber(phone);
+            logger.log('info', 'service txnHistory success');
+
+            if (!txnHistory.length) {
+                return response.error(res, http.NOT_FOUND, null, 'Record not found');
+            }
+
+            logger.log('info', 'get transaction history finished');
+            return response.success(res, txnHistory, 'Record found');
+        } catch(err) {
+            logger.log('info', `get transaction history failed | ${err.message}`);
+            return response.internalError(res, null, err.message);
+        }
+    },
+    getTransactionHistoryDetail: async(req, res) => {
+        logger.log('info', 'get transaction history detail started ...');
+        try {
+            let { phone, id } = req.params
+                
+            if (!id.match(/^[0-9a-fA-F]{24}$/)) {
+                return response.badRequest(res, null, 'Invalid id given');
+            }
+            
+            logger.log('info', 'get transaction history data started');
+            let historyDetail = await transactionService.txnHistoryDetail(id);
+            logger.log('info', 'get transaction history data retrieved');
+
+            if (!historyDetail) {
+                return response.error(res, http.NOT_FOUND, null, 'Record not found');
+            }
+
+            if (phone !== historyDetail?.user?.noHandphone) {
+                return response.error(res, http.FORBIDDEN, null, 'Forbidden');
+            }
+
+            logger.log('info', 'get transaction history detail finished');
+            return response.success(res, historyDetail, 'Record found');
+        } catch(err) {
+            logger.log('info', `get transaction history detail failed | ${err.message}`);
+            return response.internalError(res, null, err.message);
+        }
     }
 }
 

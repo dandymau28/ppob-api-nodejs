@@ -68,6 +68,12 @@ const service = {
         }
 
         return await axios.post(url, body);
+    },
+    txnHistoryByPhoneNumber: async(phoneNumber) => {
+        return await Transactions.find({ user: { noHandphone: phoneNumber } }).select({ user:1, product: 1, status: 1, totalPrice: 1, txnRef: 1, txnNumber: 1 })
+    },
+    txnHistoryDetail: async(id) => {
+        return await Transactions.findById(id);
     }
 }
 
