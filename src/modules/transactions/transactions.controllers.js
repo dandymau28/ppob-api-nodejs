@@ -44,8 +44,15 @@ const controller = {
 
             logger.log('info', `purchase product detail retrieving ... `);
             let product = await transactionService.productDetail(productId);
-            let detail = transactionService.preTxnDetail(product);
             logger.log('info', `purchase product detail retrieved ... `);
+
+            if (!product) {
+                return response.error(res, http.NOT_FOUND, null, 'Product not found');
+            }
+
+            logger.log('info', 'creating pre txn detail ...');
+            let detail = transactionService.preTxnDetail(product);
+            logger.log('info', 'txn detail created');
 
             logger.log('info', `purchase product creating transaction ... `);
             let txn = await transactionService.createTransaction({ user: req.user, product, totalPrice: detail.total, txnNumber});
