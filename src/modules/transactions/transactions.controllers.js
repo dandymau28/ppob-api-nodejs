@@ -3,6 +3,7 @@ const response = require('../../../response')
 const http = require('../../../response/http_code')
 const { validationResult } = require('express-validator');
 const { process: logger } = require('../../../helper/logger')
+const validate = require('../../../helper/validator');
 
 const controller = {
     getTransactionDetail: async(req, res) => {
@@ -10,7 +11,8 @@ const controller = {
         try {
             let { id } = req.params
             
-            if (!id.match(/^[0-9a-fA-F]{24}$/)) {
+            if (!validate.isValidObjectID(id)) {
+                logger.log('error', `purchase product failed | Invalid id given`);
                 return response.badRequest(res, null, 'Invalid id given');
             }
 
@@ -41,6 +43,11 @@ const controller = {
 
             let { id: productId } = req.params;
             let { txn_number: txnNumber } = req.body;
+                
+            if (!validate.isValidObjectID(productId)) {
+                logger.log('error', `purchase product failed | Invalid id given`);
+                return response.badRequest(res, 'Invalid id given', 'Invalid id given');
+            }
 
             logger.log('info', `purchase product detail retrieving ... `);
             let product = await transactionService.productDetail(productId);
