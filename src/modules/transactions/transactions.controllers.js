@@ -46,7 +46,7 @@ const controller = {
                 
             if (!validate.isValidObjectID(productId)) {
                 logger.log('error', `purchase product failed | Invalid id given`);
-                return response.badRequest(res, 'Invalid id given', 'Invalid id given');
+                return response.badRequest(res, null, 'Invalid id given');
             }
 
             logger.log('info', `purchase product detail retrieving ... `);

@@ -22,7 +22,7 @@ const responses = {
     },
     badRequest: (res, error = null, message = null) => {
         responseError.meta.message = 'Invalid Request';
-        if (typeof error === 'string') {
+        if (!error) {
             responseError.error = [
                 {
                     msg: message
@@ -35,7 +35,7 @@ const responses = {
     },
     internalError: (res, error = null, message = null) => {
         responseError.meta.message = message;
-        if (typeof error === 'string') {
+        if (!error) {
             responseError.error = [
                 {
                     msg: message
@@ -48,7 +48,7 @@ const responses = {
     },
     error: (res, httpCode, error = null, message = null) => {
         responseError.meta.message = message;
-        if (typeof error === 'string') {
+        if (!error) {
             responseError.error = [
                 {
                     msg: message
