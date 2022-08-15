@@ -28,17 +28,18 @@ const service = {
         let session = null;
         
         let { noHandphone, username } = user;
-        let { code, price, supplier, category, operator } = product;
+        let { code, price, supplier, category, operator, description } = product;
         let paymentCode = generatePaymentCode();
         let paymentRef = generatePaymentRef();
 
         let txn = {
             user: { noHandphone, username },
-            product: { code, price, supplier, category, operator },
+            product: { code, price, supplier, category, operator, description },
             totalPrice,
             paymentCode,
             txnNumber,
             txnRef: paymentRef,
+            txnAt: moment().format(),
             status: 'pending'
         }
 
@@ -70,10 +71,15 @@ const service = {
         return await axios.post(url, body);
     },
     txnHistoryByPhoneNumber: async(phoneNumber) => {
-        return await Transactions.find({ user: { noHandphone: phoneNumber } }).select({ user:1, product: 1, status: 1, totalPrice: 1, txnRef: 1, txnNumber: 1 })
+        return await Transactions.find({ user: { noHandphone: phoneNumber } }).select({ user:1, product: 1, status: 1, totalPrice: 1, txnRef: 1, txnNumber: 1, txnAt: 1 })
     },
-    txnHistoryDetail: async(id) => {
-        return await Transactions.findById(id);
+    txnHistoryDetail: async(txnRef) => {
+        let txn = await Transactions.findOne({ txnRef: txnRef}).select({ user:1, product: 1, status: 1, totalPrice: 1, txnRef: 1, txnNumber: 1, txnAt: 1 }).lean();
+        let historySeries = await TxnHistory.find({ txnRef }).sort({ txnAt: -1}).lean();
+
+        txn = Object.assign(txn, { detail: historySeries });
+
+        return txn;
     }
 }
 
