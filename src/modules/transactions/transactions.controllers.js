@@ -144,14 +144,18 @@ const controller = {
     getTransactionHistoryDetail: async(req, res) => {
         logger.log('info', 'get transaction history detail started ...');
         try {
-            let { phone, id } = req.params
+            let { phone, ref } = req.params
                 
-            if (!id.match(/^[0-9a-fA-F]{24}$/)) {
-                return response.badRequest(res, null, 'Invalid id given');
-            }
+            // if (!id.match(/^[0-9a-fA-F]{24}$/)) {
+            //     return response.badRequest(res, null, 'Invalid id given');
+            // }
             
+            if (!ref) {
+                return response.badRequest(res, null, 'Missing required parameter: ref');
+            }
+
             logger.log('info', 'get transaction history data started');
-            let historyDetail = await transactionService.txnHistoryDetail(id);
+            let historyDetail = await transactionService.txnHistoryDetail(ref);
             logger.log('info', 'get transaction history data retrieved');
 
             if (!historyDetail) {
