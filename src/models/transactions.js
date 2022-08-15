@@ -8,7 +8,8 @@ const Transactions = new Schema({
     status: String,
     totalPrice: Number,
     txnRef: String,
-    txnNumber: String
+    txnNumber: String,
+    txnAt: Date
 }, {
     timestamps: true
 })
