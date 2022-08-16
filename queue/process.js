@@ -22,8 +22,10 @@ const process = async() => {
             try {
                 var wallet = await Wallets.findOne({user: {phone: item.phone}}).select({ balance: 1})
                 var newBalance = wallet.balance + item.pay
-                if (newBalance < wallet.balance) {
-                    throw new Error('insufficient balance')
+                if (item.transaction === 'purchase') {
+                    if (item.pay > wallet.balance) {
+                        throw new Error('insufficient balance')
+                    }
                 }
                 var debited_balance = 0;
                 var credited_balance = 0;
