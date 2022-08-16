@@ -8,7 +8,8 @@ const TransactionHistory = new Schema({
     status: String,
     txnRef: String,
     txnAt: Date,
-    txnNumber: String
+    txnNumber: String,
+    description: String
 }, {
     timestamps: true
 })
