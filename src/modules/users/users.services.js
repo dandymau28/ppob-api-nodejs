@@ -1,6 +1,8 @@
 const db = require('../../../config/database');
 const Users = require('../../models/users');
+const Wallets = require('../../models/wallets');
 const randomstring = require('randomstring');
+const mongoose = require('mongoose')
 
 
 const services_postgres = {
@@ -32,9 +34,24 @@ const services = {
         return false
     },
     StoreUser: async(user) => {
-        const store = await Users.create(user);
+        let session = null
 
-        return store;
+        return Users.createCollection()
+        .then(() => mongoose.startSession())
+        .then(_session => {
+            session = _session;
+            session.startTransaction();
+
+            return Users.create([user], {session: session});
+        })
+        .then(() => {
+
+            return Wallets.create([{ user: { phone: user.noHandphone }, balance: 0 }], {session: session});
+        })
+        .catch(() => session.abortTransaction())
+        .then(() => session.commitTransaction())
+        .then(() => session.endSession())
+        .then(() => user)
     },
     GetUserByPhone: async(phoneNumber) => {
         const user = await Users.findOne({noHandphone: phoneNumber}).select('-password');
@@ -64,8 +81,8 @@ const services = {
         const refreshToken = randomstring.generate(10);
 
         let expiryDate = new Date();
-        expiryDate.setMinutes( expiryDate.getMinutes() + 2 );
-        // expiryDate.setDate( expiryDate.getDate() + 1 );
+        // expiryDate.setMinutes( expiryDate.getMinutes() + 2 );
+        expiryDate.setDate( expiryDate.getDate() + 1 );
 
         let expiryRefreshDate = new Date();
         expiryRefreshDate.setDate( expiryRefreshDate.getDate() + 3);

@@ -63,11 +63,11 @@ const controller = {
 
             logger.log('info', `purchase product creating transaction ... `);
             let txn = await transactionService.createTransaction({ user: req.user, product, totalPrice: detail.total, txnNumber});
-            txn.totalPrice = detail.total;
-            delete txn.user;
+            transactionService.processTransaction(txn)
             logger.log('info', `purchase product transaction created ... `);
-
+            
             logger.log('info', `purchase product finished ... `);
+            delete txn.user;
             return response.success(res, txn, 'Transaksi Sukses!');
         } catch(err) {
             logger.log('error', `purchase product failed | ${err.message}`);

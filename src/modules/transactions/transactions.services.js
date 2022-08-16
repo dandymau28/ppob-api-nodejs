@@ -5,6 +5,7 @@ const mongoose = require('mongoose')
 const { v4: uuidv4 } = require('uuid')
 const moment = require('moment')
 const axios = require('axios').default
+const processQueue = require('../../../queue/process')
 
 const service = {
     productDetail: async(id) => {
@@ -52,10 +53,12 @@ const service = {
             return Transactions.create([txn], {session: session});
         })
         .then(() => {
-            delete txn.totalPrice;
-            txn.txnAt = moment().format();
+            // delete txn.totalPrice;
+            let txnHistory = { ...txn }
+            delete txnHistory.totalPrice
+            // txn.txnAt = moment().format();
 
-            return TxnHistory.create([txn], {session: session});
+            return TxnHistory.create([txnHistory], {session: session});
         })
         .then(() => session.commitTransaction())
         .then(() => session.endSession())
@@ -80,6 +83,9 @@ const service = {
         txn = Object.assign(txn, { detail: historySeries });
 
         return txn;
+    },
+    processTransaction: (txn) => {
+        processQueue({ phone: txn.user.noHandphone, pay: (txn.totalPrice * -1), txnRef: txn.txnRef, transaction: 'purchase' })
     }
 }
 
