@@ -23,9 +23,9 @@ const process = async() => {
                 var wallet = await Wallets.findOne({user: {phone: item.phone}}).select({ balance: 1})
                 var newBalance = wallet.balance + item.pay
 
-                let checkPay = item.pay * -1;
                 if (item.transaction === 'purchase') {
-                    if (checkPay > wallet.balance) {
+                    item.pay = item.pay * -1; //reversing amount
+                    if (item.pay > wallet.balance) {
                         throw new Error('insufficient balance')
                     }
                 }
@@ -41,7 +41,6 @@ const process = async() => {
                 let update = await Wallets.updateOne({ user: {phone: item.phone}}, {balance: newBalance})
 
                 if (update.modifiedCount === 1) {
-
                     switch(item.transaction) {
                         case 'topup':
                             await WalletHistory.create({
