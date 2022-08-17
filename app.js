@@ -9,7 +9,6 @@ var { v4: uuidv4 } = require('uuid');
 var indexRouter = require('./routes');
 var middleware = require('./middleware/api_auth');
 var startBot = require('./telegram')
-
 var app = express();
 
 app.use(cors());
@@ -27,8 +26,8 @@ app.use(express.urlencoded({ extended: false }));
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/api/v1', middleware.apiAuth, indexRouter);
-
-mongoose.connect('mongodb+srv://mongodb:VY5jAiyr9aSf2XPJ@cluster0.8m3glek.mongodb.net/?retryWrites=true&w=majority')
+let mongoURI = process.env.MONGO_URI
+mongoose.connect(mongoURI)
 .then(() => {
     console.log("MongoDB connected");
 })
@@ -36,7 +35,7 @@ mongoose.connect('mongodb+srv://mongodb:VY5jAiyr9aSf2XPJ@cluster0.8m3glek.mongod
     console.log("MongoDB fail to connect", err);
 });
 
-startBot();
+// startBot();
 
 mongoose.connection.on("disconnected", () => {
     console.log("Disconnected gracefully");
