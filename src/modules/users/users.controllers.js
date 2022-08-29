@@ -89,6 +89,7 @@ const controllers = {
 
             const noHandphone = req.params.phone;
             const otp = req.query?.otp;
+            const typeOTP = req.query?.type;
 
             if (!otp) {
                 return response.badRequest(res, null, 'Invalid OTP');
@@ -107,21 +108,23 @@ const controllers = {
                 return response.badRequest(res, null, 'OTP Expired');
             }
 
-            let token = await userService.CreateToken(noHandphone);
+            let resData = {}
 
-            if (!token) {
-                return response.badRequest(res, null, 'Fail to verify OTP');
+            if (typeOTP === 'login') {
+                resData = await userService.CreateToken(noHandphone);
+    
+                if (!token) {
+                    return response.badRequest(res, null, 'Fail to verify OTP');
+                }    
             }
-
-            // token.token = Buffer.from(`${noHandphone}:${token.token}`).toString('base64');
-
+            
             const removeToken = await userService.removeOTP(noHandphone);
 
             if (!removeToken) {
                 return response.badRequest(res, null, 'Fail to verify OTP');
             }
-
-            return response.success(res, token, 'OTP verified');
+            
+            return response.success(res, resData, 'OTP verified');
         } catch(err) {
             console.log(err.stack)
             return response.internalError(res, err, 'internal server error');
