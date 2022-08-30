@@ -117,7 +117,7 @@ const services = {
         return false
     },
     GetProfileByPhone: async(phoneNumber) => {
-        const user = await Users.findOne({ phoneNumber: phoneNumber}).select(['username', 'noHandphone', 'macAddress']);
+        const user = await Users.findOne({ phoneNumber: phoneNumber}).select(['username', 'noHandphone', 'macAddress', 'pinStatus']);
 
         return user;
     },
