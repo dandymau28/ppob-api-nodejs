@@ -9,6 +9,8 @@ const Users = new Schema({
     },
     email: String,
     password: String,
+    pin: String,
+    pinStatus: Boolean,
     macAddress: String,
     token: String,
     tokenExpire: Date,
