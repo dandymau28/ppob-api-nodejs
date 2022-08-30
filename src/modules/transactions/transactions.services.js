@@ -73,8 +73,21 @@ const service = {
 
         return await axios.post(url, body);
     },
-    txnHistoryByPhoneNumber: async(phoneNumber) => {
-        return await Transactions.find({ user: { noHandphone: phoneNumber } }).select({ user:1, product: 1, status: 1, totalPrice: 1, txnRef: 1, txnNumber: 1, txnAt: 1 })
+    txnHistoryByPhoneNumber: async(phoneNumber, skip, limit) => {
+        if (typeof skip === 'number' && typeof limit === 'number') {
+            return await Transactions.find({ user: { noHandphone: phoneNumber } }).select({ user:1, product: 1, status: 1, totalPrice: 1, txnRef: 1, txnNumber: 1, txnAt: 1 }).sort({txnAt: -1}).skip(skip).limit(limit)
+        } else {
+            return await Transactions.find({ user: { noHandphone: phoneNumber } }).select({ user:1, product: 1, status: 1, totalPrice: 1, txnRef: 1, txnNumber: 1, txnAt: 1 }).sort({txnAt: -1})
+        }
+    },
+    totalDocTxnHistoryByPhoneNumber: async(phoneNumber) => {
+        return await Transactions.countDocuments({ user: { noHandphone: phoneNumber } })
+    },
+    totalAmtTxnHistoryByPhoneNumber: async(phoneNumber) => {
+        return await Transactions.aggregate([
+            { $match: { user: { noHandphone: phoneNumber }}},
+            { $group: { _id: null, amount: { $sum: "$totalPrice" } }}
+        ])
     },
     txnHistoryDetail: async(txnRef) => {
         let txn = await Transactions.findOne({ txnRef: txnRef}).select({ user:1, product: 1, status: 1, totalPrice: 1, txnRef: 1, txnNumber: 1, txnAt: 1 }).lean();

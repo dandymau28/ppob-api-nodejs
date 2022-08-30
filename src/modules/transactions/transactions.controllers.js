@@ -121,13 +121,39 @@ const controller = {
         logger.log('info', 'get transaction history started ...');
         try {
             let { phone } = req.params;
+            let { s, l } = req.query;
+            let uri = `/api/v1/transactions/${phone}/history`
+            let next
+            let sNext
+            let lNext
+            let resData = {
+                totalTransaction: 0,
+                transactions: []
+            }
 
             if (req?.user?.noHandphone !== phone) {
                 return response.error(res, http.FORBIDDEN, null, 'Forbidden');
             }
 
             logger.log('info', 'start service txnHistory');
-            let txnHistory = await transactionService.txnHistoryByPhoneNumber(phone);
+            let totalAmount = await transactionService.totalAmtTxnHistoryByPhoneNumber(phone);
+            totalAmount = totalAmount.pop()
+
+            let totalDoc = await transactionService.totalDocTxnHistoryByPhoneNumber(phone);
+            if (typeof s === 'string' && typeof l === 'string') {
+                s = parseInt(s)
+                l = parseInt(l)
+                sNext = s === 0 ? l : s * l;
+                lNext = l;
+
+                if (sNext <= totalDoc) {
+                    next = `${process.env.APP_URL}${uri}?s=${sNext}&l=${lNext}`;
+                }
+            }
+
+            let txnHistory = await transactionService.txnHistoryByPhoneNumber(phone, s, l);
+            resData.totalTransaction = totalAmount.amount
+            resData.transactions = txnHistory
             logger.log('info', 'service txnHistory success');
 
             if (!txnHistory.length) {
@@ -135,7 +161,7 @@ const controller = {
             }
 
             logger.log('info', 'get transaction history finished');
-            return response.success(res, txnHistory, 'Record found');
+            return response.success(res, resData, 'Record found', next);
         } catch(err) {
             logger.log('info', `get transaction history failed | ${err.message}`);
             return response.internalError(res, null, err.message);
