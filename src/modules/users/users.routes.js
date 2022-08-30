@@ -10,5 +10,7 @@ router.patch('/:phone/verify-otp', userValidator.verifyOTP, userController.verif
 router.get('/:phone/profile', reqAuth, userController.getProfile);
 router.post('/:phone/refresh-token', reqAuth, userController.refreshToken);
 router.head('/:type/check/:id', userController.checkID);
+router.post('/:phone/edit/pin', userValidator.setPIN, userController.setPIN);
+router.head('/:phone/verify-pin', userController.verifyPIN);
 
 module.exports = router;
