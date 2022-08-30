@@ -89,7 +89,6 @@ const controllers = {
 
             const noHandphone = req.params.phone;
             const otp = req.query?.otp;
-            const typeOTP = req.query?.type;
 
             if (!otp) {
                 return response.badRequest(res, null, 'Invalid OTP');
@@ -107,16 +106,12 @@ const controllers = {
             if (otpExpire < now) {
                 return response.badRequest(res, null, 'OTP Expired');
             }
+            
+            let token = await userService.CreateToken(noHandphone);
 
-            let resData = {}
-
-            if (typeOTP === 'login') {
-                resData = await userService.CreateToken(noHandphone);
-    
-                if (!token) {
-                    return response.badRequest(res, null, 'Fail to verify OTP');
-                }    
-            }
+            if (!token) {
+                return response.badRequest(res, null, 'Fail to verify OTP');
+            }            
             
             const removeToken = await userService.removeOTP(noHandphone);
 
@@ -124,7 +119,7 @@ const controllers = {
                 return response.badRequest(res, null, 'Fail to verify OTP');
             }
             
-            return response.success(res, resData, 'OTP verified');
+            return response.success(res, token, 'OTP verified');
         } catch(err) {
             console.log(err.stack)
             return response.internalError(res, err, 'internal server error');
@@ -212,8 +207,63 @@ const controllers = {
             console.log(err.stack)
             return response.internalError(res, err, 'internal server error');
         }
-    }
+    },
+    setPIN: async(req, res) => {
+        const errors = validationResult(req);
+        const { new_pin, new_pin_validation, old_pin } = req.body
+        const { phone } = req.params
 
+        if (!errors.isEmpty()) {
+            return response.error(res, http.BAD_REQUEST, errors.array(), 'Invalid request');
+        }
+
+        try {
+            let isNewPINSame = new_pin === new_pin_validation
+    
+            if (!isNewPINSame) {
+                return response.error(res, http.BAD_REQUEST, null, 'PIN not same')
+            }
+    
+            let user = await userService.GetUserByPhone(phone);
+    
+            if (!user) {
+                return response.error(res, http.NOT_FOUND, null, 'User not found')
+            }
+    
+            if (user?.pin) {
+                if (user.pin !== old_pin) {
+                    return response.error(res, http.BAD_REQUEST, null, 'PIN wrong')
+                }
+            }
+
+            let updatePIN = await userService.UpdatePIN(new_pin, phone)
+
+            if (!updatePIN) {
+                return response.error(res, http.BAD_REQUEST, null, 'Failed to update PIN')
+            }
+
+            return response.success(res, null, 'success');
+        } catch (err) {
+            return response.internalError(res, err, 'internal error');
+        }
+    },
+    verifyPIN: async(req, res) => {
+        const { pin } = req.query;
+        const { phone } = req.params;
+
+        try {
+            let PINverified = await userService.VerifyPIN(pin, phone)
+
+            if (PINverified) {
+                return response.success(res);
+            }
+
+            return response.error(res, http.BAD_REQUEST)
+        } catch (err) {
+            console.log(err.stack)
+            return response.internalError(res, err, 'internal server error');
+        }
+    }
 }
 
 module.exports = controllers;
