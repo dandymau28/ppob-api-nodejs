@@ -15,7 +15,8 @@ const responseError = {
 }
 
 const responses = {
-    success: (res, data = null, message = null) => {
+    success: (res, data = null, message = null, next = null) => {
+        response.meta.next = next;
         response.meta.message = message;
         response.data = data;
         res.status(http.SUCCESS).json(response);
