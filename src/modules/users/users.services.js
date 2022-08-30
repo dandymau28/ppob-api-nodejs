@@ -123,12 +123,25 @@ const services = {
     },
     CheckRefreshToken: async(phoneNumber, token, refreshToken) => {
         const user = await Users.findOne({ noHandphone: phoneNumber, token: token, refreshToken: refreshToken});
-        console.log(user);
 
         if (user) {
             return user;
         }
         return false;
+    },
+    UpdatePIN: async(pin, phone) => {
+        let update = await Users.updateOne({ noHandphone: phone }, { pin, pinStatus: true })
+
+        return update.matchedCount > 0;
+    },
+    VerifyPIN: async(pin, phone) => {
+        const user = await Users.findOne({noHandphone: phone, pin: pin});
+
+        if (user) {
+            return true
+        }
+
+        return false
     }
 };
 
