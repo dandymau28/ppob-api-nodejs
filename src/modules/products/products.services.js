@@ -3,6 +3,7 @@ const cheerio = require('cheerio');
 const moment = require('moment')
 const Products = require('../../models/products')
 const { process: logger } = require('../../../helper/logger')
+const md5 = require('md5')
 
 //TODO GET DATA AND OTHER PRODUCTS
 
@@ -245,9 +246,9 @@ const services = {
             { 
                 $match: 
                 {
-                    operator: operator,
+                    operator: operator.toLowerCase(),
                     status: true,
-                    category: category
+                    category: category.toLowerCase() 
                 }
             },
             {
@@ -279,6 +280,63 @@ const services = {
                 }
             }
         ])
+    },
+    fetchDigiflazz: async() => {
+        let url = process.env.DIGI_URL + "price-list";
+        let username = process.env.DIGI_USERNAME;
+        let apiKey = process.env.DIGI_API_KEY;
+        logger.log('debug', `Fetching digiflazz: ${url} : ${username} : ${apiKey}`)
+
+        let body = {
+            "cmd": "deposit",
+            "username": username,
+            "sign": md5(username + apiKey + "deposit")
+        }
+
+        try {
+            let digiflazzCall = await axios.post(url, body)
+            logger.log('debug', `digiflazzCall: `, digiflazzCall)
+
+            let priceList = digiflazzCall.data.data
+
+            let products = priceList.map(item => {
+                const product = {}
+
+                product["code"] = item.buyer_sku_code;
+                product["name"] = item.product_name;
+                product["price"] = item.price;
+                product["status"] = true;
+                product["description"] = item.desc;
+                product["supplier"] = item.seller_name;
+                product["sourceLink"] = "digiflazz";
+                product["category"] = item.category.toLowerCase();
+                product["operator"] = item.brand.toLowerCase();
+
+                if (product.category === 'pulsa') {
+                    const splitName = product.name.split(" ");
+                    product["group"] = splitName[splitName.length - 1];
+                }
+
+                return product
+            })
+
+            logger.log('debug', `Map product result: `, products)
+
+            Products.bulkWrite(products.map((product) => ({
+                updateOne: {
+                    filter: { code : product.code },
+                    update: { $set: product },
+                    upsert: true
+                }
+            })))
+            // await Products.insertMany(products)
+
+            logger.log('info', 'Fetch digiflazz finished')
+            return true
+        } catch(e) {
+            logger.log('error', 'Error occured on fetchDigiflazz ' + e.message)
+            return false
+        }
     }
 }
 

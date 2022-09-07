@@ -10,7 +10,8 @@ const controller = {
     getScrape: async(req, res) => {
         logger.log('info', `${moment().format()} | Start scraping ... `);
         try {
-            await Promise.all([productService.scrapeOtomax(), productService.scrapeStokpulsa()]);
+            // await Promise.all([productService.scrapeOtomax(), productService.scrapeStokpulsa()]);
+            await Promise.all([productService.fetchDigiflazz()]);
             
             logger.log('info', `${moment().format()} | Scrape finished `);
             response.success(res, {}, 'success');
@@ -37,15 +38,22 @@ const controller = {
                 return response.error(res, http.NOT_FOUND, null, 'Product not found');
             }
 
-            let newProducts = products.map((item) => {
-                item.group = item.group.length > 3 ? Array.from(item.group)[0] + 'jt' : item.group + 'rb';
-                return item;
-            });
+            // let newProducts = products.map((item) => {
+            //     // item.group = item.group.length > 3 ? Array.from(item.group)[0] + 'jt' : item.group + 'rb';
+            //     if (item.category === 'pulsa') {
+            //         const splitName = item.name.split(" ");
+            //         const group = splitName[splitName.length - 1].split(".")
+            //         item.group = group[0];
+            //     }
+            //     return item;
+            // });
+
+            logger.log('debug', 'Product found ', products)
 
             logger.log('info', `${moment().format()} | getting product list by operator done `);
-            return response.success(res, newProducts, 'success');
+            return response.success(res, products, 'success');
         } catch(err) {
-            logger.log('error', `${moment().format()} | getting product list by operator failed `);
+            logger.log('error', `${moment().format()} | getting product list by operator failed | ${err.message}`);
             response.internalError(res, err, err.message);
         }
     },
