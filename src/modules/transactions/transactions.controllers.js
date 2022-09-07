@@ -51,7 +51,7 @@ const controller = {
 
             logger.log('info', `purchase product detail retrieving ... `);
             let product = await transactionService.productDetail(productId);
-            logger.log('info', `purchase product detail retrieved ... `);
+            logger.log('info', `purchase product detail retrieved`);
 
             if (!product) {
                 return response.error(res, http.NOT_FOUND, null, 'Product not found');
@@ -61,16 +61,25 @@ const controller = {
             let detail = transactionService.preTxnDetail(product);
             logger.log('info', 'txn detail created');
 
+            logger.log('info', 'call topup digiflazz ...');
+            let topup = await transactionService.digiTopup({ code: detail.product_code, txnNumber })
+            let topupData = topup.data.data;
+            logger.log('info', 'call topup digiflazz done');
+
             logger.log('info', `purchase product creating transaction ... `);
-            let txn = await transactionService.createTransaction({ user: req.user, product, totalPrice: detail.total, txnNumber});
+            let txn = await transactionService.createTransaction({ user: req.user, product, totalPrice: detail.total, txnNumber, paymentRef: topupData.ref_id, response: topupData, status: topupData.status });
             transactionService.processTransaction(txn)
             logger.log('info', `purchase product transaction created ... `);
             
-            logger.log('info', `purchase product finished ... `);
+            logger.log('info', `purchase product finished`);
             delete txn.user;
             return response.success(res, txn, 'Transaksi Sukses!');
         } catch(err) {
-            logger.log('error', `purchase product failed | ${err.message}`);
+            let responseData = {}
+            if (err?.response?.data) {
+                responseData = err.response.data
+            }
+            logger.log('error', `purchase product failed | ${err.message} | ${JSON.stringify(responseData || {})}`);
             return response.internalError(res, null, err.message);
         }
     },

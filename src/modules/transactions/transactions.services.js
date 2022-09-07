@@ -6,6 +6,8 @@ const { v4: uuidv4 } = require('uuid')
 const moment = require('moment')
 const axios = require('axios').default
 const processQueue = require('../../../queue/process')
+const { process: logger } = require('../../../helper/logger')
+const md5 = require('md5')
 
 const service = {
     productDetail: async(id) => {
@@ -25,13 +27,12 @@ const service = {
 
         return data
     },
-    createTransaction: async({ user, product, totalPrice, txnNumber }) => {
+    createTransaction: async({ user, product, totalPrice, txnNumber, response, paymentRef, status }) => {
         let session = null;
         
         let { noHandphone, username } = user;
         let { code, price, supplier, category, operator, description } = product;
         let paymentCode = generatePaymentCode();
-        let paymentRef = generatePaymentRef();
 
         let txn = {
             user: { noHandphone, username },
@@ -41,7 +42,8 @@ const service = {
             txnNumber,
             txnRef: paymentRef,
             txnAt: moment().format(),
-            status: 'pending'
+            status,
+            sourceResponse: response,
         }
 
         return Transactions.createCollection()
@@ -99,8 +101,32 @@ const service = {
     },
     processTransaction: (txn) => {
         processQueue({ phone: txn.user.noHandphone, pay: (txn.totalPrice * -1), txnRef: txn.txnRef, transaction: 'purchase' })
+    },
+    digiTopup: async({ code, txnNumber }) => {
+        let url = process.env.DIGI_URL + '/transaction';
+        let username = process.env.DIGI_USERNAME;
+        let apiKey = process.env.DIGI_API_KEY;
+        let isDev = process.env.NODE_ENV;
+        let txnRef = generatePaymentRef()
+    
+        let body = {
+            username,
+            buyer_sku_code: code,
+            customer_no: txnNumber,
+            ref_id: txnRef,
+            sign: md5(username + apiKey + txnRef)
+        }
+
+        if (isDev) {
+            body["testing"] = true
+            body["buyer_sku_code"] = "xld10"
+            body["customer_no"] = "087800001230"
+        }
+        
+        return await axios.post(url, body)
     }
 }
+
 
 const generatePaymentRef = () => {
     let dateCode = moment().format('YYMMDD');
