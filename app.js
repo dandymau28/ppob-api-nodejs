@@ -35,7 +35,7 @@ mongoose.connect(mongoURI)
     console.log("MongoDB fail to connect", err);
 });
 
-// startBot();
+startBot();
 
 mongoose.connection.on("disconnected", () => {
     console.log("Disconnected gracefully");
