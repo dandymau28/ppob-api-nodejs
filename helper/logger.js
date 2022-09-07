@@ -4,7 +4,7 @@ const moment = require('moment');
 const expressWinston = require('express-winston');
 expressWinston.requestWhitelist.push('body');
 
-const filename = () => {
+const filename = (type = "log") => {
     if (!fs.existsSync(`./logs`)) {
         fs.mkdirSync(`./logs`)
     }
@@ -15,7 +15,7 @@ const filename = () => {
         fs.mkdirSync(`./logs/${moment().format('YYYY')}/${moment().format('MM')}`)
     }
 
-    return `./logs/${moment().format('YYYY')}/${moment().format('MM')}/${moment().format('DD')}.log`
+    return `./logs/${moment().format('YYYY')}/${moment().format('MM')}/${type}-${moment().format('DD')}.log`
 }
 
 const logger = {
@@ -28,8 +28,9 @@ const logger = {
             //
             // - Write all logs with importance level of `info` or less to `combined.log`
             //
-            new transports.File({ filename: filename() }),
-            new transports.Console({ level: 'info' })
+            new transports.File({ filename: filename("system"), level: 'info' }),
+            new transports.File({ filename: filename("error"), level: 'error' }),
+            new transports.Console({ level: 'debug' })
         ],
     }),
     response: expressWinston.logger({
