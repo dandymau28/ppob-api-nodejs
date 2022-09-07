@@ -29,7 +29,7 @@ const logger = {
             // - Write all logs with importance level of `info` or less to `combined.log`
             //
             new transports.File({ filename: filename() }),
-            new transports.Console()
+            new transports.Console({ level: 'info' })
         ],
     }),
     response: expressWinston.logger({
