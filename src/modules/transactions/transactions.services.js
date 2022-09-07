@@ -18,7 +18,7 @@ const service = {
         let additional = price * 0.1;
 
         let data = {
-            "product_name": `${product.operator} - ${product.group}000`,
+            "product_name": `${product.operator} - ${product.group}`,
             "product_code": product.code,
             "price" : price,
             "additional": additional,
