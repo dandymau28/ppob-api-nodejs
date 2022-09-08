@@ -76,11 +76,32 @@ const service = {
 
         return await axios.post(url, body);
     },
-    txnHistoryByPhoneNumber: async(phoneNumber, skip, limit) => {
-        if (typeof skip === 'number' && typeof limit === 'number') {
-            return await Transactions.find({ user: { noHandphone: phoneNumber } }).select({ user:1, product: 1, status: 1, totalPrice: 1, txnRef: 1, txnNumber: 1, txnAt: 1 }).sort({txnAt: -1}).skip(skip).limit(limit)
+    txnHistoryByPhoneNumber: async({phoneNumber, skip = -1, limit = 0, start_date = "", end_date = "", status = "", category = ""}) => {
+        let filter = {
+            user: {
+                noHandphone: phoneNumber
+            }
+        }
+
+        if (start_date && end_date) {
+            filter["txnAt"] = {
+                $gte: start_date,
+                $lt: end_date
+            }
+        }
+
+        if (status) {
+            filter["status"] = status
+        }
+
+        if (category) {
+            filter["product.category"] = category
+        }
+
+        if (skip >= 0 && limit > 0) {
+            return await Transactions.find(filter).select({ user:1, product: 1, status: 1, totalPrice: 1, txnRef: 1, txnNumber: 1, txnAt: 1 }).sort({txnAt: -1}).skip(skip).limit(limit)
         } else {
-            return await Transactions.find({ user: { noHandphone: phoneNumber } }).select({ user:1, product: 1, status: 1, totalPrice: 1, txnRef: 1, txnNumber: 1, txnAt: 1 }).sort({txnAt: -1})
+            return await Transactions.find(filter).select({ user:1, product: 1, status: 1, totalPrice: 1, txnRef: 1, txnNumber: 1, txnAt: 1 }).sort({txnAt: -1})
         }
     },
     totalDocTxnHistoryByPhoneNumber: async(phoneNumber) => {

@@ -131,7 +131,7 @@ const controller = {
         logger.log('info', 'get transaction history started ...');
         try {
             let { phone } = req.params;
-            let { s, l } = req.query;
+            let { s, l, start_date, end_date, status, category } = req.query;
             let uri = `/api/v1/transactions/${phone}/history`
             let next
             let sNext
@@ -143,6 +143,15 @@ const controller = {
 
             if (req?.user?.noHandphone !== phone) {
                 return response.error(res, http.FORBIDDEN, null, 'Forbidden');
+            }
+
+            if (start_date && end_date) {                
+                start_date = moment(start_date)
+                end_date = moment(end_date)
+
+                if (!start_date.isValid() || !end_date.isValid()) {
+                    return response.error(res, http.BAD_REQUEST, null, 'Date is not valid')
+                }
             }
 
             logger.log('info', 'start service txnHistory');
@@ -161,7 +170,7 @@ const controller = {
                 }
             }
 
-            let txnHistory = await transactionService.txnHistoryByPhoneNumber(phone, s, l);
+            let txnHistory = await transactionService.txnHistoryByPhoneNumber({phoneNumber: phone, skip: s, limit: l, start_date, end_date, status, category});
             resData.totalTransaction = totalAmount.amount
             resData.transactions = txnHistory
             logger.log('info', 'service txnHistory success');
