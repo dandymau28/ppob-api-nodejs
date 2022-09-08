@@ -6,6 +6,8 @@ const Transactions = require('../src/models/transactions')
 const { v4: uuidv4 } = require('uuid')
 const moment = require('moment')
 const mongoose = require('mongoose')
+const { process: logger } = require('../helper/logger')
+const externalTxn = require('../helper/external.transaction')
 
 var q = new Queue()
 var onProcess = new Map()
@@ -28,6 +30,8 @@ const process = async() => {
                     if (item.pay > wallet.balance) {
                         throw new Error('insufficient balance')
                     }
+
+                    var digiTopupRes = await externalTxn.digiTopup({ code: item.code, txnNumber: item.txnNumber, txnRef: item.txnRef })
                 }
                 var debited_balance = 0;
                 var credited_balance = 0;
@@ -57,14 +61,15 @@ const process = async() => {
                             })
                             break;
                         case 'purchase':
-                            await Promise.all([updateHistory(item, debited_balance, credited_balance, wallet, newBalance), updateTransaction(item, 'success')])
+                            await Promise.all([updateHistory(item, debited_balance, credited_balance, wallet, newBalance), updateTransaction({item, status: digiTopupRes?.data?.data?.status, response: digiTopupRes?.data?.data})])
                             break;
                         case 'refund':
-                            await Promise.all([updateHistory(item, debited_balance, credited_balance, wallet, newBalance), updateTransaction(item, 'failed')])
+                            await Promise.all([updateHistory(item, debited_balance, credited_balance, wallet, newBalance), updateTransaction({item, status: 'failed'})])
                             break;
                     }
                 }
             } catch (err) {
+                logger.log('error', 'Failed on queue: ', err)
                 switch(item.transaction) {
                     case 'topup':
                         await WalletHistory.create({
@@ -81,7 +86,10 @@ const process = async() => {
                         })
                         break;
                     case 'purchase':
-                        await Promise.all([updateTransaction(item, 'failed', err.message)])
+                        await Promise.all([updateTransaction({item, status: 'failed', errorMessage: err.message})])
+                        break;
+                    case 'purchase':
+                        await Promise.all([updateTransaction({item, status: 'failed', errorMessage: err.message})])
                         break;
                 }
             }
@@ -110,7 +118,7 @@ const updateHistory = async(item, debited_balance, credited_balance, wallet, new
     })
 }
 
-const updateTransaction = async(item, status, errorMessage = '') => {
+const updateTransaction = async({item, status = "", errorMessage = '', response = {}}) => {
     let session = null
     let txn = await Transactions.findOne({ phone: item.phone, txnRef: item.txnRef }).lean()
 
@@ -120,12 +128,12 @@ const updateTransaction = async(item, status, errorMessage = '') => {
             session = _session;
             session.startTransaction();
 
-            return Transactions.updateOne( { phone: item.phone, txnRef: item.txnRef }, { status }, {session: session})
+            return Transactions.updateOne( { phone: item.phone, txnRef: item.txnRef }, { status: status.toLowerCase(), sourceResponse: response }, {session: session})
         })
         .then(() => {
             delete txn.totalPrice;
             txn.txnAt = moment().format();
-            txn.status = status
+            txn.status = status.toLowerCase();
             txn.description = errorMessage;
 
             return TxnHistory.create([txn], {session: session});
