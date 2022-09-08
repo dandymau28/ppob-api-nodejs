@@ -171,11 +171,11 @@ const controller = {
             }
 
             let txnHistory = await transactionService.txnHistoryByPhoneNumber({phoneNumber: phone, skip: s, limit: l, start_date, end_date, status, category});
-            if (txnHistory.length <= 0) {
-                return response.error(res, http.NOT_FOUND, null, 'Record not found');
-            }
+            // if (txnHistory.length <= 0) {
+            //     return response.error(res, http.NOT_FOUND, null, 'Record not found');
+            // }
 
-            resData.totalTransaction = totalAmount?.amount
+            resData.totalTransaction = totalAmount?.amount || 0
             resData.transactions = txnHistory
             logger.log('info', 'service txnHistory success');
 
