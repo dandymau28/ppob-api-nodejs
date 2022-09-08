@@ -73,7 +73,13 @@ const controllers = {
                 return response.internalError(res, null, 'Failed to login, please try again');
             }
 
-            return response.success(res, { otp: OTPsent }, 'OTP generated');
+            let isDev = process.env.NODE_ENV !== 'production';
+
+            if (isDev) {
+                return response.success(res, { otp: OTPsent }, 'OTP generated');
+            } else {
+                return response.success(res, null, 'OTP generated');
+            }
         } catch (err) {
             console.log(err.stack)
             return response.internalError(res, err, 'internal server error');
