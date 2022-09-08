@@ -62,15 +62,15 @@ const controller = {
             let detail = transactionService.preTxnDetail(product);
             logger.log('info', 'txn detail created');
 
-            logger.log('info', 'call topup digiflazz ...');
-            let topup = await transactionService.digiTopup({ code: detail.product_code, txnNumber })
-            let topupData = topup.data.data;
-            logger.log('info', 'call topup digiflazz done');
-
             logger.log('info', `purchase product creating transaction ... `);
-            let txn = await transactionService.createTransaction({ user: req.user, product, totalPrice: detail.total, txnNumber, paymentRef: topupData.ref_id, response: topupData, status: topupData.status });
-            transactionService.processTransaction({ phone: txn.user.noHandphone, pay: (txn.totalPrice * -1), txnRef: txn.txnRef, transaction: 'purchase' })
+            let txn = await transactionService.createTransaction({ user: req.user, product, totalPrice: detail.total, txnNumber });
+            transactionService.processTransaction({ phone: txn.user.noHandphone, pay: (txn.totalPrice * -1), txnRef: txn.txnRef, transaction: 'purchase', product_code: detail.product_code })
             logger.log('info', `purchase product transaction created ... `);
+
+            // logger.log('info', 'call topup digiflazz ...');
+            // let topup = await transactionService.digiTopup({ code: detail.product_code, txnNumber })
+            // let topupData = topup.data.data;
+            // logger.log('info', 'call topup digiflazz done');
             
             logger.log('info', `purchase product finished`);
             delete txn.user;

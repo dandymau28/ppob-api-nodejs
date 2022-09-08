@@ -28,12 +28,13 @@ const service = {
 
         return data
     },
-    createTransaction: async({ user, product, totalPrice, txnNumber, response, paymentRef, status }) => {
+    createTransaction: async({ user, product, totalPrice, txnNumber, status = "pending" }) => {
         let session = null;
         
         let { noHandphone, username } = user;
         let { code, price, supplier, category, operator, description } = product;
         let paymentCode = generatePaymentCode();
+        let paymentRef = generatePaymentRef();
 
         let txn = {
             user: { noHandphone, username },
@@ -44,7 +45,6 @@ const service = {
             txnRef: paymentRef,
             txnAt: moment().format(),
             status,
-            sourceResponse: response,
         }
 
         return Transactions.createCollection()
@@ -55,14 +55,14 @@ const service = {
 
             return Transactions.create([txn], {session: session});
         })
-        .then(() => {
-            // delete txn.totalPrice;
-            let txnHistory = { ...txn }
-            delete txnHistory.totalPrice
-            // txn.txnAt = moment().format();
+        // .then(() => {
+        //     // delete txn.totalPrice;
+        //     let txnHistory = { ...txn }
+        //     delete txnHistory.totalPrice
+        //     // txn.txnAt = moment().format();
 
-            return TxnHistory.create([txnHistory], {session: session});
-        })
+        //     return TxnHistory.create([txnHistory], {session: session});
+        // })
         .then(() => session.commitTransaction())
         .then(() => session.endSession())
         .then(() => txn);
@@ -121,16 +121,16 @@ const service = {
 
         return txn;
     },
-    processTransaction: ({ phone, pay, txnRef, transaction }) => {
+    processTransaction: ({ phone, pay, txnRef, transaction, product_code, txnNumber }) => {
         // processQueue({ phone: txn.user.noHandphone, pay: (txn.totalPrice * -1), txnRef: txn.txnRef, transaction: 'purchase' })
-        processQueue({ phone, pay, txnRef, transaction })
+        processQueue({ phone, pay, txnRef, transaction, product_code, txnNumber })
     },
-    digiTopup: async({ code, txnNumber }) => {
+    digiTopup: async({ code, txnNumber, txnRef }) => {
+        logger.log('info', 'call topup digiflazz ...');
         let url = process.env.DIGI_URL + '/transaction';
         let username = process.env.DIGI_USERNAME;
         let apiKey = process.env.DIGI_API_KEY;
-        let isDev = process.env.NODE_ENV;
-        let txnRef = generatePaymentRef()
+        let isDev = process.env.NODE_ENV === 'development';
     
         let body = {
             username,
@@ -140,12 +140,13 @@ const service = {
             sign: md5(username + apiKey + txnRef)
         }
 
-        if (isDev === 'development') {
+        if (isDev) {
             body["testing"] = true
             body["buyer_sku_code"] = "xld10"
             body["customer_no"] = "087800001233"
         }
         
+        logger.log('info', 'call topup digiflazz done');
         return await axios.post(url, body)
     },
     saveHook: async({ txnRef, txnID, deliveryID, hookEvent, txnType, postData }) => {
