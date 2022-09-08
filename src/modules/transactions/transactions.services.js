@@ -98,6 +98,8 @@ const service = {
             filter["product.category"] = category
         }
 
+        logger.log('debug', 'Filter txnHistoryByPhoneNumber', filter)
+
         if (skip >= 0 && limit > 0) {
             return await Transactions.find(filter).select({ user:1, product: 1, status: 1, totalPrice: 1, txnRef: 1, txnNumber: 1, txnAt: 1 }).sort({txnAt: -1}).skip(skip).limit(limit)
         } else {
