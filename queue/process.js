@@ -59,6 +59,9 @@ const process = async() => {
                         case 'purchase':
                             await Promise.all([updateHistory(item, debited_balance, credited_balance, wallet, newBalance), updateTransaction(item, 'success')])
                             break;
+                        case 'refund':
+                            await Promise.all([updateHistory(item, debited_balance, credited_balance, wallet, newBalance), updateTransaction(item, 'failed')])
+                            break;
                     }
                 }
             } catch (err) {
