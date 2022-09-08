@@ -8,6 +8,7 @@ const axios = require('axios').default
 const processQueue = require('../../../queue/process')
 const { process: logger } = require('../../../helper/logger')
 const md5 = require('md5')
+const HookHistory = require('../../models/hookHistory')
 
 const service = {
     productDetail: async(id) => {
@@ -99,8 +100,9 @@ const service = {
 
         return txn;
     },
-    processTransaction: (txn) => {
-        processQueue({ phone: txn.user.noHandphone, pay: (txn.totalPrice * -1), txnRef: txn.txnRef, transaction: 'purchase' })
+    processTransaction: ({ phone, pay, txnRef, transaction }) => {
+        // processQueue({ phone: txn.user.noHandphone, pay: (txn.totalPrice * -1), txnRef: txn.txnRef, transaction: 'purchase' })
+        processQueue({ phone, pay, txnRef, transaction })
     },
     digiTopup: async({ code, txnNumber }) => {
         let url = process.env.DIGI_URL + '/transaction';
@@ -120,13 +122,27 @@ const service = {
         if (isDev) {
             body["testing"] = true
             body["buyer_sku_code"] = "xld10"
-            body["customer_no"] = "087800001230"
+            body["customer_no"] = "087800001233"
         }
         
         return await axios.post(url, body)
+    },
+    saveHook: async({ txnRef, txnID, deliveryID, hookEvent, txnType, postData }) => {
+        return await HookHistory.create({ txnRef, txnID, deliveryID, hookEvent, txnType, data: postData });
+    },
+    isRefExist: async(txnRef) => {
+        return await Transactions.countDocuments({ txnRef });
+    },
+    txnByTxnRef: async(txnRef) => {
+        return await Transactions.findOne({ txnRef });
+    },
+    updateTxnByTxnRef: async(txn) => {
+        return await Transactions.findOneAndUpdate({ txnRef: txn.txnRef }, txn)
+    },
+    saveTxnHistory: async(txn) => {
+        return await TxnHistory.create(txn)
     }
 }
-
 
 const generatePaymentRef = () => {
     let dateCode = moment().format('YYMMDD');

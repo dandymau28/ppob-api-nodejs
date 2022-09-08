@@ -4,6 +4,7 @@ const http = require('../../../response/http_code')
 const { validationResult } = require('express-validator');
 const { process: logger } = require('../../../helper/logger')
 const validate = require('../../../helper/validator');
+const moment = require('moment');
 
 const controller = {
     getTransactionDetail: async(req, res) => {
@@ -68,7 +69,7 @@ const controller = {
 
             logger.log('info', `purchase product creating transaction ... `);
             let txn = await transactionService.createTransaction({ user: req.user, product, totalPrice: detail.total, txnNumber, paymentRef: topupData.ref_id, response: topupData, status: topupData.status });
-            transactionService.processTransaction(txn)
+            transactionService.processTransaction({ phone: txn.user.noHandphone, pay: (txn.totalPrice * -1), txnRef: txn.txnRef, transaction: 'purchase' })
             logger.log('info', `purchase product transaction created ... `);
             
             logger.log('info', `purchase product finished`);
@@ -206,6 +207,53 @@ const controller = {
         } catch(err) {
             logger.log('info', `get transaction history detail failed | ${err.message}`);
             return response.internalError(res, null, err.message);
+        }
+    },
+    hookHandle: async(req, res) => {
+        logger.log('debug', 'handling hook ...')
+        let deliveryID = req.headers['x-digiflazz-delivery'];
+        let eventType = req.headers['x-digiflazz-event'];
+        let txnType = req.headers['user-agent'] === 'Digiflazz-Hookshot' ? 'prepaid' : 'postpaid';
+        let { data } = req.body;
+
+        try {
+            logger.log('debug', `deliveryID: ${deliveryID}, eventType: ${eventType}, txnType: ${txnType}`);
+
+            logger.log('info', 'saving hook ...');
+            await transactionService.saveHook({ txnRef: data.ref_id, txnID: data.trx_id, deliveryID, hookEvent: eventType, txnType, postData: data })
+            logger.log('info', 'hook saved');
+
+            let txnDoc = await transactionService.isRefExist(data.ref_id);
+            let isTxnExist = txnDoc > 0;
+
+            if (!isTxnExist) {
+                return response.error(res, http.NOT_FOUND, null, 'transaction not found');
+            }
+
+            let txn = await transactionService.txnByTxnRef(data.ref_id);
+
+            if (data.rc === "00") {
+                logger.log('info', 'update transaction ...')
+
+                txn.status = "success";
+                await transactionService.updateTxnByTxnRef(txn)
+
+                txn.txnAt = moment().format();
+                await transactionService.saveTxnHistory(txn)
+                logger.log('info', 'update transaction success')
+            } else {
+                logger.log('info', 'process refund ...')
+
+                transactionService.processTransaction({ phone: txn.user.noHandphone, pay: txn.totalPrice, txnRef: txn.txnRef, transaction: 'refund' })
+
+                logger.log('info', 'process refund success')                
+            }
+
+            return response.success(res, null, 'Success');
+        } catch(err) {
+            logger.log('error', `handling hook failed | ${err.message}`);
+            return response.internalError(res, null, err.message);
+
         }
     }
 }

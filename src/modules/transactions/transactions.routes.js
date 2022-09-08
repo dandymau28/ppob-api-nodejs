@@ -9,5 +9,6 @@ router.post('/product/:id/buy', reqAuth, transactionValidator.purchaseProduct, t
 router.get('/product/:category/validate/:customerNo', reqAuth, transactionValidator.validateID, transactionController.validateID);
 router.get('/:phone/history', reqAuth, transactionController.getTransactionHistory);
 router.get('/:phone/history/:ref/detail', reqAuth, transactionController.getTransactionHistoryDetail);
+router.post('/hooks', transactionController.hookHandle);
 
 module.exports = router;
