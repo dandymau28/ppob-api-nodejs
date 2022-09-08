@@ -140,7 +140,7 @@ const service = {
             sign: md5(username + apiKey + txnRef)
         }
 
-        if (isDev) {
+        if (isDev === 'development') {
             body["testing"] = true
             body["buyer_sku_code"] = "xld10"
             body["customer_no"] = "087800001233"
