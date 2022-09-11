@@ -248,7 +248,7 @@ const controller = {
                 await transactionService.updateTxnByTxnRef(txn)
 
                 txn.txnAt = moment().format();
-                delete txn._id;
+
                 await transactionService.saveTxnHistory(txn)
                 logger.log('info', 'update transaction success')
             } else {
