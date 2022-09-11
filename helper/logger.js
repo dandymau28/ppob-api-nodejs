@@ -30,7 +30,7 @@ const logger = {
             //
             new transports.File({ filename: filename("system"), level: 'info' }),
             new transports.File({ filename: filename("error"), level: 'error' }),
-            new transports.Console({ level: 'debug' })
+            new transports.Console({ level: 'info' })
         ],
     }),
     response: expressWinston.logger({
