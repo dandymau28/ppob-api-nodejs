@@ -89,7 +89,7 @@ const process = async() => {
                     case 'purchase':
                         await Promise.all([updateTransaction({item, status: 'failed', errorMessage: err.message})])
                         break;
-                    case 'purchase':
+                    case 'refund':
                         await Promise.all([updateTransaction({item, status: 'failed', errorMessage: err.message})])
                         break;
                 }
@@ -129,7 +129,7 @@ const updateTransaction = async({item, status = "", errorMessage = '', response 
             session = _session;
             session.startTransaction();
 
-            return Transactions.updateOne( { phone: item.phone, txnRef: item.txnRef }, { status: status.toLowerCase(), sourceResponse: response }, {session: session})
+            return Transactions.updateOne( { user: {noHandphone: item.phone}, txnRef: item.txnRef }, { status: status.toLowerCase(), sourceResponse: response }, {session: session})
         })
         .then(() => {
             delete txn.totalPrice;
