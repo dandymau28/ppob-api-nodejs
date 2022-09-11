@@ -31,7 +31,8 @@ const process = async() => {
                         throw new Error('insufficient balance')
                     }
 
-                    var digiTopupRes = await externalTxn.digiTopup({ code: item.code, txnNumber: item.txnNumber, txnRef: item.txnRef })
+                    console.log(item);
+                    var digiTopupRes = await externalTxn.digiTopup({ code: item.product_code, txnNumber: item.txnNumber, txnRef: item.txnRef })
                 }
                 var debited_balance = 0;
                 var credited_balance = 0;
