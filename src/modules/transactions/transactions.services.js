@@ -158,13 +158,13 @@ const service = {
         return await Transactions.countDocuments({ txnRef });
     },
     txnByTxnRef: async(txnRef) => {
-        return await Transactions.findOne({ txnRef });
+        return await Transactions.findOne({ txnRef }, { _id: 0 }).lean();
     },
     updateTxnByTxnRef: async(txn) => {
         return await Transactions.findOneAndUpdate({ txnRef: txn.txnRef }, txn)
     },
     saveTxnHistory: async(txn) => {
-        return await TxnHistory.create(txn)
+        return await TxnHistory.create([txn])
     }
 }
 
