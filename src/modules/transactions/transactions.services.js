@@ -23,7 +23,7 @@ const service = {
             "product_code": product.code,
             "price" : price,
             "additional": additional,
-            "total": Math.round(price + additional)
+            "total": price
         }
 
         return data
