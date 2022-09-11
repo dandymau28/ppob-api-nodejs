@@ -96,7 +96,7 @@ const process = async() => {
             }
 
             onProcess.delete(item.phone)
-            logger.log('info', `process for ${item.phome} finished`)
+            logger.log('info', `process for ${item.phone} finished`)
         }
     }
 }
