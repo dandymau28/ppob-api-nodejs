@@ -16,7 +16,7 @@ const service = {
     },
     preTxnDetail: (product) => {
         let { price } = product;
-        let additional = price * 0.1;
+        let additional = price * 0.03;
 
         let data = {
             "product_name": `${product.operator} - ${product.group}`,
