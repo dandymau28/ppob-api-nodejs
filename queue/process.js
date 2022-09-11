@@ -133,6 +133,7 @@ const updateTransaction = async({item, status = "", errorMessage = '', response 
         })
         .then(() => {
             delete txn.totalPrice;
+            delete txn._id;
             txn.txnAt = moment().format();
             txn.status = status.toLowerCase();
             txn.description = errorMessage;
