@@ -304,7 +304,7 @@ const services = {
 
                 product["code"] = item.buyer_sku_code;
                 product["name"] = item.product_name;
-                product["price"] = item.price >= 50000 ? item.price + (item.price * 0.003) : item.price + (item.price * 0.0205);
+                product["price"] = item.price >= 50000 ? Math.round(item.price + (item.price * 0.003)) : Math.round(item.price + (item.price * 0.0205));
                 product["status"] = item.unlimited_stock ? true : item.stock > 0;
                 product["description"] = item.desc;
                 product["supplier"] = item.seller_name;
