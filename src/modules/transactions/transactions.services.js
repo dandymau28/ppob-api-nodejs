@@ -111,7 +111,7 @@ const service = {
     },
     totalAmtTxnHistoryByPhoneNumber: async(phoneNumber) => {
         return await Transactions.aggregate([
-            { $match: { user: { noHandphone: phoneNumber }}},
+            { $match: { user: { noHandphone: phoneNumber }, status: 'success'}},
             { $group: { _id: null, amount: { $sum: "$totalPrice" } }}
         ])
     },
