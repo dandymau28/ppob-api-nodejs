@@ -4,6 +4,9 @@ const moment = require('moment')
 const Products = require('../../models/products')
 const { process: logger } = require('../../../helper/logger')
 const md5 = require('md5')
+const db = require('../../../config/database');
+const { json } = require('express/lib/response');
+const uuid = require('uuid')
 
 //TODO GET DATA AND OTHER PRODUCTS
 
@@ -299,36 +302,74 @@ const services = {
 
             let priceList = digiflazzCall.data.data
 
-            let products = priceList.map(item => {
-                const product = {}
+            let products = priceList.map(async(item) => {
+                let product;
+                
+                // logger.log('info', `inserting product: ${item.product_name}`)
+                // const product = {}
 
-                product["code"] = item.buyer_sku_code;
-                product["name"] = item.product_name;
-                product["price"] = item.price >= 50000 ? Math.round(item.price + (item.price * 0.003)) : Math.round(item.price + (item.price * 0.0205));
-                product["status"] = item.unlimited_stock ? true : item.stock > 0;
-                product["description"] = item.desc;
-                product["supplier"] = item.seller_name;
-                product["sourceLink"] = "digiflazz";
-                product["category"] = item.category.toLowerCase();
-                product["operator"] = item.brand.toLowerCase();
+                // product["code"] = item.buyer_sku_code;
+                // product["name"] = item.product_name;
+                // product["price"] = item.price >= 50000 ? Math.round(item.price + (item.price * 0.003)) : Math.round(item.price + (item.price * 0.0205));
+                // product["status"] = item.unlimited_stock ? true : item.stock > 0;
+                // product["description"] = item.desc;
+                // product["supplier"] = item.seller_name;
+                // product["sourceLink"] = "digiflazz";
+                // product["category"] = item.category.toLowerCase();
+                // product["operator"] = item.brand.toLowerCase();
 
-                if (product.category === 'pulsa') {
-                    const splitName = product.name.split(" ");
-                    product["group"] = splitName[splitName.length - 1];
+
+                // if (product.category === 'pulsa') {
+                //     const splitName = product.name.split(" ");
+                //     product["group"] = splitName[splitName.length - 1];
+                // }
+
+                let margin;
+                if (item.price <= 10000) {
+                    margin = (5/100) * item.price
+                } else if (item.price > 10000 && item.price < 95000) {
+                    margin = (3/100) * item.price
+                } else if (item.price >= 95000 && item.price < 200000){
+                    margin = (0.5/100) * item.price
+                } else {
+                    margin = (0.8/100) * item.price
                 }
 
-                return product
+                item.seller_price = item.price
+                item.price = Math.round(item.seller_price + margin);
+
+                let uuidv4 = uuid.v4();
+                item.uuid = uuidv4.toString();
+
+                try {
+                    product = await db.table('products').where({buyer_sku_code: item.buyer_sku_code}).first();
+                } catch (e) {
+                    logger.log('info', 'error on getting data: ' + item.product_name)
+                    logger.log('info', 'error message ' + e.message);
+                }
+                
+                try {
+                    if (product) {
+                        await db.table('products').where({buyer_sku_code: item.buyer_sku_code}).update(item)
+                    } else {
+                        await db.table('products').insert(item);
+                    }
+                    // logger.log('info', JSON.stringify(item));
+                } catch (err) {
+                    logger.log('info', 'error on inserting ' + item.product_name);
+                    logger.log('info', 'error insert message ' + err.message);
+                }
             })
 
             logger.log('debug', `Map product result: `, products)
 
-            Products.bulkWrite(products.map((product) => ({
-                updateOne: {
-                    filter: { code : product.code },
-                    update: { $set: product },
-                    upsert: true
-                }
-            })))
+            // Products.bulkWrite(products.map((product) => ({
+            //     updateOne: {
+            //         filter: { code : product.code },
+            //         update: { $set: product },
+            //         upsert: true
+            //     }
+            // })))
             // await Products.insertMany(products)
 
             logger.log('info', 'Fetch digiflazz finished')

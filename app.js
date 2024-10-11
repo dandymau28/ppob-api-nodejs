@@ -26,29 +26,29 @@ app.use(express.urlencoded({ extended: false }));
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/api/v1', middleware.apiAuth, indexRouter);
-let mongoURI = process.env.MONGO_URI
-mongoose.connect(mongoURI)
-.then(() => {
-    console.log("MongoDB connected");
-})
-.catch(err => {
-    console.log("MongoDB fail to connect", err);
-});
+// let mongoURI = process.env.MONGO_URI
+// mongoose.connect(mongoURI)
+// .then(() => {
+//     console.log("MongoDB connected");
+// })
+// .catch(err => {
+//     console.log("MongoDB fail to connect", err);
+// });
 
-startBot();
+// startBot();
 
-mongoose.connection.on("disconnected", () => {
-    console.log("Disconnected gracefully");
-})
+// mongoose.connection.on("disconnected", () => {
+//     console.log("Disconnected gracefully");
+// })
 
 process.on('exit', (code) => {
-    mongoose.disconnect();
+    // mongoose.disconnect();
     console.log(`Exit on code: ${code}`)
     process.exit(0)
 })
 
 process.on('SIGINT', () => {
-    mongoose.disconnect();
+    // mongoose.disconnect();
     console.log(`Exit by SIGINT`)
     process.exit(0)
 })
